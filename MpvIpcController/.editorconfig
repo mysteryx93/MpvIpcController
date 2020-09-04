@@ -1,0 +1,3 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+dotnet_code_quality.CA1062.null_check_validation_methods = CheckNotNull|CheckNotNullOrEmpty|CheckAssignableFrom|CheckDerivesFrom

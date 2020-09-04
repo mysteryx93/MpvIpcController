@@ -1,0 +1,14 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+[*.cs]
+
+dotnet_code_quality.CA1062.null_check_validation_methods = CheckNotNull|CheckNotNullOrEmpty|CheckAssignableFrom|CheckDerivesFrom
+
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = none
+
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = none
