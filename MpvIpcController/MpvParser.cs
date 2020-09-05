@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
@@ -28,7 +30,7 @@ namespace HanumanInstitute.MpvIpcController
                 {
                     if (item.Name != "event")
                     {
-                        response.Data.Add(item.Name, item.Value.GetRawText()); // ##
+                        response.Data.Add(item.Name, item.Value.GetRawText());
                     }
                 }
                 return response;
@@ -45,12 +47,9 @@ namespace HanumanInstitute.MpvIpcController
                 {
                     response.Error = error.GetString();
                 }
-                if (reader.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+                if (reader.RootElement.TryGetProperty("data", out var data))
                 {
-                    foreach (var item in data.EnumerateObject())
-                    {
-                        response.Data.Add(item.Name, item.Value.GetRawText()); // ##
-                    }
+                    response.Data = ParseData(data);
                 }
                 return response;
             }
@@ -58,6 +57,32 @@ namespace HanumanInstitute.MpvIpcController
             {
                 throw new InvalidDataException($"Unrecognized message: {message}");
             }
+        }
+
+        private static object? ParseData(JsonElement data)
+        {
+            return data.ValueKind switch
+            {
+                JsonValueKind.Null => null,
+                JsonValueKind.String => data.GetString(),
+                JsonValueKind.Number => data.GetInt32(),
+                JsonValueKind.Object => ParseList(data),
+                JsonValueKind.False => false,
+                JsonValueKind.True => true,
+                JsonValueKind.Array => data.ToString(),
+                JsonValueKind.Undefined => data.ToString(),
+                _ => null
+            };
+        }
+
+        private static Dictionary<string, object?> ParseList(JsonElement data)
+        {
+            var result = new Dictionary<string, object?>();
+            foreach (var item in data.EnumerateObject())
+            {
+                result.Add(item.Name, item.Value.GetRawText());
+            }
+            return result;
         }
     }
 }

@@ -5,18 +5,26 @@ using Xunit;
 using Moq;
 using System.Threading.Tasks;
 using System.IO;
+using Xunit.Abstractions;
 
 namespace HanumanInstitute.MpvIpcController.Tests
 {
     public class MpvControllerIntegrationTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public MpvControllerIntegrationTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         private const string MpvPath = @"C:\Program Files\Mpv.net\mpvnet.exe";
         private string SampleClip => Path.Combine(Environment.CurrentDirectory, "SampleClip.mp4");
 
         private static int s_pipeId;
-        private async Task<IMpvController> SetupModel()
+        private async Task<IMpvApi> SetupModel()
         {
-            var factory = new MpvControllerFactory();
+            var factory = new MpvApiFactory();
             return await factory.StartAsync(MpvPath, $"mpvtest{s_pipeId++}");
         }
 
@@ -51,9 +59,46 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             var model = await SetupModel();
 
-            var response = await model.SendMessageAsync("loadfile", SampleClip);
+            await model.SendMessageAsync("loadfile", SampleClip);
 
-            Assert.Equal("success", response.Error);
+            await QuitAsync(model);
+        }
+
+        [Fact]
+        public async Task SendMessage_ClientName_ReturnsClientName()
+        {
+            var model = await SetupModel();
+
+            var response = await model.GetClientName();
+
+            Assert.NotEmpty(response);
+            await QuitAsync(model);
+        }
+
+        [Fact]
+        public async Task SendMessage_ConcurrentRequests_ReceivesAllResponses()
+        {
+            var model = await SetupModel();
+            model.LogEnabled = true;
+            model.ResponseTimeout = -1;
+            const int Concurrent = 10;
+            var requests = new int[Concurrent];
+            for (var i = 0; i < Concurrent; i++)
+            {
+                requests[i] = i;
+            }
+
+            try
+            {
+                var tasksClient = requests.AsyncParallelForEach(x => model.SendMessageAsync("client_name"));
+                await tasksClient.ConfigureAwait(false);
+            }
+            finally
+            {
+                _output.WriteLine(model?.Log?.ToString());
+            }
+
+            // Success: No freeze and no crash.
             await QuitAsync(model);
         }
     }

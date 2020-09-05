@@ -12,7 +12,7 @@ namespace HanumanInstitute.MpvIpcController
         [JsonPropertyName("error")]
         public string Error { get; set; } = string.Empty;
         [JsonPropertyName("data")]
-        public IDictionary<string, object?> Data { get; } = new Dictionary<string, object?>();
+        public object? Data { get; set; }
         [JsonPropertyName("request_id")]
         public int? RequestID { get; set; }
     }

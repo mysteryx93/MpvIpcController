@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,13 +16,22 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     public class MpvController : IDisposable, IMpvController
     {
-        private readonly Stream _connection;
+        private readonly NamedPipeClientStream _connection;
         private const int InBufferSize = 1024;
         private readonly byte[] _readBuffer = new byte[InBufferSize];
         private int _readBufferPos;
         private int _requestId;
         private readonly List<MpvResponse> _responses = new List<MpvResponse>();
         private readonly ManualResetEventSlim _waitResponse = new ManualResetEventSlim(true);
+        private int _responseTimeout = 3000;
+        private bool _logEnabled;
+        private readonly object _lockLogEnabled = new object();
+        private readonly SemaphoreSlim _semaphoreSendMessage = new SemaphoreSlim(1, 1);
+
+        /// <summary>
+        /// Gets a text log of communication data from both directions.
+        /// </summary>
+        public StringBuilder? Log { get; private set; }
 
         /// <summary>
         /// Occurs when an event is received.
@@ -27,10 +39,10 @@ namespace HanumanInstitute.MpvIpcController
         public event EventHandler<MpvMessageEventArgs>? EventReceived;
 
         /// <summary>
-        /// Initializes a new instance of the MpvController class to handle communication over specified stream.
+        /// Initializes a new instance of the MpvControllerBase class to handle communication over specified stream.
         /// </summary>
         /// <param name="connection">A stream supporting both reading and writing.</param>
-        public MpvController(Stream connection)
+        public MpvController(NamedPipeClientStream connection)
         {
             _connection = connection.CheckNotNull(nameof(connection));
             if (!_connection.CanRead || !_connection.CanWrite)
@@ -49,7 +61,29 @@ namespace HanumanInstitute.MpvIpcController
             get => _responseTimeout;
             set => _responseTimeout = value >= 0 ? value : -1;
         }
-        private int _responseTimeout = 3000;
+
+        /// <summary>
+        /// Gets or sets whether to keep a log of communication data.
+        /// </summary>
+        public bool LogEnabled
+        {
+            get => _logEnabled;
+            set
+            {
+                lock (_lockLogEnabled)
+                {
+                    if (value && !_logEnabled)
+                    {
+                        Log = new StringBuilder();
+                    }
+                    else if (!value && _logEnabled)
+                    {
+                        Log = null;
+                    }
+                    _logEnabled = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Starts listening to messages over the connection stream.
@@ -94,6 +128,8 @@ namespace HanumanInstitute.MpvIpcController
         {
             if (string.IsNullOrEmpty(message)) { return; }
 
+            Log?.Append(message);
+
             var msg = MpvParser.Parse(message);
             if (msg is MpvEvent msgEvent)
             {
@@ -103,7 +139,10 @@ namespace HanumanInstitute.MpvIpcController
             else if (msg is MpvResponse msgResponse)
             {
                 // Add to list of responses to be retrieved by QueryId.
-                _responses.Add(msgResponse);
+                lock (_responses)
+                {
+                    _responses.Add(msgResponse);
+                }
                 _waitResponse.Set();
             }
         }
@@ -114,7 +153,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="commandName">The command to send.</param>
         /// <param name="args">Additional command parameters.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<MpvResponse> SendMessageAsync(string commandName, params object[] args)
+        public async Task<object?> SendMessageAsync(string commandName, params object[] args)
         {
             var cmd = new object[args.Length + 1];
             cmd[0] = commandName;
@@ -131,55 +170,69 @@ namespace HanumanInstitute.MpvIpcController
             var jsonString = System.Text.Json.JsonSerializer.Serialize(request) + '\n';
             var jsonBytes = Encoding.UTF8.GetBytes(jsonString);
 
-            await _connection.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
+            Log?.Append(jsonString);
+            await _semaphoreSendMessage.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                await _connection.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
+            }
+            finally
+            {
+                _semaphoreSendMessage.Release();
+            }
 
             // Wait for response with matching RequestId.
             var watch = new Stopwatch();
             watch.Start();
-            var responseIndex = FindResponseIndex(request.RequestId.Value);
-            while (responseIndex < 0 && watch.ElapsedMilliseconds < ResponseTimeout)
+            var response = FindResponse(request.RequestId.Value);
+            while (response == null && (ResponseTimeout < 0 || watch.ElapsedMilliseconds < ResponseTimeout))
             {
                 // Calculate wait timeout.
-                var timeout = -1;
+                var timeout = 1000;
                 if (ResponseTimeout > -1)
                 {
                     timeout = (int)(ResponseTimeout - watch.ElapsedMilliseconds);
-                    timeout = timeout < 0 ? 0 : timeout;
+                    timeout = timeout < 0 ? 0 : timeout > 1000 ? 1000 : timeout;
                 }
 
                 // Wait until any message is received.
                 _waitResponse.Reset();
                 _waitResponse.Wait(timeout);
-                responseIndex = FindResponseIndex(request.RequestId.Value);
+                response = FindResponse(request.RequestId.Value);
             }
 
             // Timeout.
-            if (responseIndex < 0)
+            if (response == null)
             {
-                throw new TimeoutException("A command response from MPV was not received before timeout.");
+                throw new TimeoutException($"A response from MPV to request_id={request.RequestId.Value} was not received before timeout.");
+            }
+            else
+            {
+                // Remove response from list.
+                lock (_responses)
+                {
+                    _responses.Remove(response);
+                }
             }
 
-            // Remove response from list and return.
-            var response = _responses[responseIndex];
-            _responses.RemoveAt(responseIndex);
-            return response;
+            if (response.Error != "success")
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", request.Command, response.Error));
+            }
+            return response.Data;
         }
 
         /// <summary>
-        /// Returns the index at which specified request id is found in the list of responses, or -1.
+        /// Returns the response with specified ID from the list of received responses.
         /// </summary>
         /// <param name="requestId">The request id to look for.</param>
-        /// <returns>The position of the response in the list, or -1.</returns>
-        private int FindResponseIndex(int requestId)
+        /// <returns>The response with matching id.</returns>
+        private MpvResponse FindResponse(int requestId)
         {
-            for (var i = 0; i < _responses.Count; i++)
+            lock (_responses)
             {
-                if (_responses[i].RequestID == requestId)
-                {
-                    return i;
-                }
+                return _responses.FirstOrDefault(x => x.RequestID == requestId);
             }
-            return -1;
         }
 
 
@@ -192,6 +245,7 @@ namespace HanumanInstitute.MpvIpcController
                 {
                     _connection?.Dispose();
                     _waitResponse.Dispose();
+                    _semaphoreSendMessage.Dispose();
                 }
 
                 _disposedValue = true;

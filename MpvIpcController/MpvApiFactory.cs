@@ -9,7 +9,7 @@ namespace HanumanInstitute.MpvIpcController
     /// <summary>
     /// Establishes the connection to a MPV server and creates controllers.
     /// </summary>
-    public class MpvControllerFactory : IMpvControllerFactory
+    public class MpvApiFactory : IMpvApiFactory
     {
         /// <summary>
         /// Gets or sets the name of the server to connect to. By default, '.' for local machine.
@@ -38,7 +38,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="pipeName">The name of the IPC pipe name.</param>
         /// <returns>A connected MpvController.</returns>
         /// <exception cref="Win32Exception">An error occurred when opening the associated file.</exception>
-        public async Task<IMpvController> StartAsync(string mpvPath, string pipeName = "mpvpipe")
+        public async Task<IMpvApi> StartAsync(string mpvPath, string pipeName = "mpvpipe")
         {
             mpvPath.CheckNotNullOrEmpty(nameof(mpvPath));
 
@@ -47,14 +47,13 @@ namespace HanumanInstitute.MpvIpcController
             return await ConnectAsync(pipeName).ConfigureAwait(false);
         }
 
-
         /// <summary>
         /// Connects to an existing instance of MPV via specified IPC pipe name.
         /// </summary>
         /// <param name="pipeName">The IPC pipe name to connect to.</param>
         /// <returns>A connected MpvController.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed: Connection closure is handled by MpvController.")]
-        public async Task<IMpvController> ConnectAsync(string pipeName)
+        public async Task<IMpvApi> ConnectAsync(string pipeName)
         {
             var connection = new NamedPipeClientStream(_serverName, pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
             await connection.ConnectAsync(Timeout).ConfigureAwait(false);
@@ -65,7 +64,7 @@ namespace HanumanInstitute.MpvIpcController
                 throw new InvalidOperationException("Cannot connect to the MPC IPC socket.");
             }
 
-            return new MpvController(connection);
+            return new MpvApi(connection);
         }
     }
 }

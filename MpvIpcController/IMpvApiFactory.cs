@@ -6,7 +6,7 @@ namespace HanumanInstitute.MpvIpcController
     /// <summary>
     /// Establishes the connection to a MPV server and creates controllers.
     /// </summary>
-    public interface IMpvControllerFactory
+    public interface IMpvApiFactory
     {
         /// <summary>
         /// Gets or sets the name of the server to connect to. By default, '.' for local machine.
@@ -23,12 +23,12 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="pipeName">The name of the IPC pipe name.</param>
         /// <returns>A connected MpvController.</returns>
         /// <exception cref="Win32Exception">An error occurred when opening the associated file.</exception>
-        Task<IMpvController> StartAsync(string mpvPath, string pipeName = "mpvpipe");
+        Task<IMpvApi> StartAsync(string mpvPath, string pipeName = "mpvpipe");
         /// <summary>
         /// Connects to an existing instance of MPV via specified IPC pipe name.
         /// </summary>
         /// <param name="pipeName">The IPC pipe name to connect to.</param>
         /// <returns>A connected MpvController.</returns>
-        Task<IMpvController> ConnectAsync(string pipeName);
+        Task<IMpvApi> ConnectAsync(string pipeName);
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace HanumanInstitute.MpvIpcController
@@ -14,11 +16,19 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         int ResponseTimeout { get; set; }
         /// <summary>
+        /// Gets or sets whether to keep a log of communication data.
+        /// </summary>
+        bool LogEnabled { get; set; }
+        /// <summary>
+        /// Gets a text log of communication data from both directions.
+        /// </summary>
+        StringBuilder? Log { get; }
+        /// <summary>
         /// Sends specified message to MPV.
         /// </summary>
         /// <param name="commandName">The command to send.</param>
         /// <param name="args">Additional command parameters.</param>
         /// <returns>The server's response to the command.</returns>
-        Task<MpvResponse> SendMessageAsync(string commandName, params object[] args);
+        Task<object?> SendMessageAsync(string commandName, params object[] args);
     }
 }
