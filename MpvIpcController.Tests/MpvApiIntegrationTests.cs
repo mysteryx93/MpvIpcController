@@ -8,7 +8,6 @@ namespace HanumanInstitute.MpvIpcController.Tests
     public class MpvApiIntegrationTests
     {
         private readonly ITestOutputHelper _output;
-        private readonly TestIntegrationSetup _app = new TestIntegrationSetup();
 
         public MpvApiIntegrationTests(ITestOutputHelper output)
         {
@@ -18,28 +17,28 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [Fact]
         public async Task SendMessage_ClientName_ReturnsClientName()
         {
-            var model = await _app.SetupModel();
+            using var app = await TestIntegrationSetup.CreateAsync();
 
-            var response = await model.GetClientName();
+            var response = await app.Api.GetClientName();
 
-            await ValidateAsync(response, response.Length > 0, model);
+            await ValidateAsync(response, response.Length > 0, app);
         }
 
         [Fact]
         public async Task SendMessage_GetVersion_ReturnsVersion()
         {
-            var model = await _app.SetupModel();
+            using var app = await TestIntegrationSetup.CreateAsync();
 
-            var response = await model.GetVersion();
+            var response = await app.Api.GetVersion();
 
-            await ValidateAsync(response, response > 0, model);
+            await ValidateAsync(response, response > 0, app);
         }
 
-        private async Task ValidateAsync(object response, bool valid, IMpvApi model)
+        private async Task ValidateAsync(object response, bool valid, TestIntegrationSetup app)
         {
             _output.WriteLine(response.ToString());
             Assert.True(valid);
-            await _app.QuitAsync(model);
+            await app.QuitAsync();
         }
     }
 }

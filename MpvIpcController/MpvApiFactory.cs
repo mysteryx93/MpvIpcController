@@ -39,7 +39,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="pipeName">The name of the IPC pipe name.</param>
         /// <returns>A connected MpvController.</returns>
         /// <exception cref="Win32Exception">An error occurred when opening the associated file.</exception>
-        public async Task<IMpvApi> StartAsync(string mpvPath, string pipeName = "mpvpipe")
+        public async Task<MpvApi> StartAsync(string mpvPath, string pipeName = "mpvpipe")
         {
             mpvPath.CheckNotNullOrEmpty(nameof(mpvPath));
 
@@ -54,7 +54,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="pipeName">The IPC pipe name to connect to.</param>
         /// <returns>A connected MpvController.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed: Connection closure is handled by MpvController.")]
-        public async Task<IMpvApi> ConnectAsync(string pipeName)
+        public async Task<MpvApi> ConnectAsync(string pipeName)
         {
             var connection = new NamedPipeClientStream(_serverName, pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
             await connection.ConnectAsync(Timeout).ConfigureAwait(false);
@@ -65,7 +65,7 @@ namespace HanumanInstitute.MpvIpcController
                 throw new InvalidOperationException("Cannot connect to the MPC IPC socket.");
             }
 
-            return new MpvApi(connection);
+            return new MpvApi(new MpvController(connection));
         }
     }
 }

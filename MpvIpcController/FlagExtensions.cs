@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -11,7 +13,7 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         /// <param name="flag">The flag value to format.</param>
         /// <returns>The flag name in MPV's syntax.</returns>
-        public static string GetFlagName<T>(this T flag)
+        public static string FormatMpvFlag<T>(this T flag)
             where T : Enum
         {
             var value = flag.ToString();
@@ -26,15 +28,15 @@ namespace HanumanInstitute.MpvIpcController
         /// <typeparam name="T">The type of flag enumeration.</typeparam>
         /// <param name="flags">The type of the flag array to normalize.</param>
         /// <returns>A string representation of the flags.</returns>
-        public static string? NormalizeFlags<T>(this T[] flags)
+        public static string? FormatMpvFlag<T>(this IEnumerable<T> flags)
             where T : Enum
         {
-            if (flags == null || flags.Length == 0)
+            if (flags == null || !flags.Any())
             {
                 return null;
             }
 
-            var values = flags.Select(x => x.GetFlagName());
+            var values = flags.Select(x => x.FormatMpvFlag());
             return string.Join("+", values);
         }
     }

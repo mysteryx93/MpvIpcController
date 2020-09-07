@@ -62,11 +62,6 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
-        /// Gets or sets whether to wait for server response when sending commands.
-        /// </summary>
-        public bool WaitForResponse { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets whether to keep a log of communication data.
         /// </summary>
         public bool LogEnabled
@@ -105,7 +100,7 @@ namespace HanumanInstitute.MpvIpcController
                 // Raise event.
                 EventReceived?.Invoke(this, new MpvMessageEventArgs(msgEvent));
             }
-            else if (msg is MpvResponse msgResponse)
+            else if (msg is MpvResponse msgResponse && msgResponse.RequestID.HasValue)
             {
                 // Add to list of responses to be retrieved by QueryId.
                 lock (_responses)
@@ -122,15 +117,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="commandName">The command to send.</param>
         /// <param name="args">Additional command parameters.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<object?> SendMessageAsync(string commandName, params object?[] args)
+        public async Task<object?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
         {
-            // Copy parameters into a new list beginning with commandName.
-            var cmd = new object[args.Length + 1];
-            cmd[0] = commandName;
-            if (args.Length > 0)
-            {
-                args.CopyTo(cmd, 1);
-            }
+            cmd.CheckNotNullOrEmpty(nameof(cmd));
 
             // Remove null values at the end.
             var cmdLength = cmd.Length;
@@ -172,13 +161,14 @@ namespace HanumanInstitute.MpvIpcController
             LogAppend(jsonString);
 
 
-            if (WaitForResponse)
+            if (options == null || options.WaitForResponse)
             {
                 // Wait for response with matching RequestId.
                 var watch = new Stopwatch();
                 watch.Start();
                 var response = FindResponse(request.RequestId.Value);
-                while (response == null && (ResponseTimeout < 0 || watch.ElapsedMilliseconds < ResponseTimeout))
+                var maxTimeout = options?.ResponseTimeout ?? ResponseTimeout;
+                while (response == null && (maxTimeout < 0 || watch.ElapsedMilliseconds < maxTimeout))
                 {
                     // Calculate wait timeout.
                     var timeout = 1000;
@@ -210,7 +200,7 @@ namespace HanumanInstitute.MpvIpcController
 
                 if (response.Error != "success")
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", commandName, response.Error));
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", cmd[0], response.Error));
                 }
                 return response.Data;
             }

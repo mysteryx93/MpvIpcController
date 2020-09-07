@@ -7,31 +7,33 @@ namespace HanumanInstitute.MpvIpcController
     /// Multiple flags can be combined, e.g.: absolute+keyframes.
     /// By default, keyframes is used for relative, relative-percent, and absolute-percent seeks, while exact is used for absolute seeks.
     /// </summary>
-    public enum SeekOption
+    [Flags]
+    public enum SeekOptions
     {
+        None = 0,
         /// <summary>
         /// Seek relative to current position (a negative value seeks backwards).
         /// </summary>
-        Relative,
+        Relative = 1,
         /// <summary>
         /// Seek to a given time (a negative value starts from the end of the file).
         /// </summary>
-        Absolute,
+        Absolute = 2,
         /// <summary>
         /// Seek to a given percent position.
         /// </summary>
-        AbsolutePercent,
+        AbsolutePercent = 4,
         /// <summary>
         /// Seek relative to current position in percent.
         /// </summary>
-        RelativePercent,
+        RelativePercent = 8,
         /// <summary>
         /// Always restart playback at keyframe boundaries (fast).
         /// </summary>
-        Keyframes,
+        Keyframes = 16,
         /// <summary>
         /// Always do exact/hr/precise seeks (slow).
         /// </summary>
-        Exact
+        Exact = 32
     }
 }

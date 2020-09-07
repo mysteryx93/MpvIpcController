@@ -21,7 +21,9 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [NotNull]
         public NamedPipeClientStream? Client { get; private set; }
         [NotNull]
-        public IMpvApi? Model { get; private set; }
+        public MpvApi? Api { get; private set; }
+        [NotNull]
+        public MpvController? Controller { get; private set; }
         private readonly SemaphoreSlim _semaphoreResponse = new SemaphoreSlim(1, 1);
         [NotNull]
         private PipeStreamListener? _listener;
@@ -37,7 +39,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
             Server.WaitForConnection();
             _listener = new PipeStreamListener(Server, MessageReceived);
             _listener.Start();
-            Model = new MpvApi(Client);
+            Controller = new MpvController(Client);
+            Api = new MpvApi(Controller);
             return this;
         }
 
@@ -68,7 +71,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
                 if (disposing)
                 {
                     _listener?.Dispose();
-                    Model?.Dispose();
+                    Api?.Dispose();
                     Client?.Dispose();
                     Server?.Dispose();
                     _semaphoreResponse.Dispose();

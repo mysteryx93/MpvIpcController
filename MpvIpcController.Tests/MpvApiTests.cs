@@ -19,9 +19,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task RequestLogMessages_ValidValue_ServerReceivesMessage()
         {
             using var app = TestSetup.Create();
-            app.Model.WaitForResponse = false;
 
-            await app.Model.RequestLogMessages(LogLevel.Fatal);
+            await app.Api.RequestLogMessages(LogLevel.Fatal, new MpvCommandOptions().DoNotWait());
 
             Assert.Contains("fatal", app.ServerLog.ToString(), StringComparison.InvariantCulture);
         }
@@ -30,9 +29,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task RequestLogMessages_InvalidValue_ServerReceivesMessage()
         {
             using var app = TestSetup.Create();
-            app.Model.WaitForResponse = false;
 
-            var act = app!.Model.RequestLogMessages((LogLevel)9999);
+            var act = app!.Api.RequestLogMessages((LogLevel)9999, new MpvCommandOptions().DoNotWait());
 
             await Assert.ThrowsAsync<ArgumentException>(() => act);
         }

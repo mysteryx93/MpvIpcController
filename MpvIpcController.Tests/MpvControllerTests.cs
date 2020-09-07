@@ -29,7 +29,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             using var app = TestSetup.Create();
 
             IDictionary<string, object?>? data = null;
-            app.Model.EventReceived += (s, e) =>
+            app.Controller.EventReceived += (s, e) =>
             {
                 data = e.Event.Data;
             };
@@ -45,7 +45,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseSimple());
             var response = await requestTask;
 
@@ -57,7 +57,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseWithInt());
             var response = await requestTask;
 
@@ -69,7 +69,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             var response = await requestTask;
 
@@ -81,7 +81,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName, null, null);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName, null, null);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             await requestTask;
 
@@ -94,7 +94,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName, param, null);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName, param, null);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             await requestTask;
 
@@ -109,7 +109,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName, null, param, null);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName, null, param, null);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             await requestTask;
 
@@ -129,7 +129,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Model.SendMessageAsync(CommandName, param);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName, param);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             await requestTask;
 
@@ -140,9 +140,9 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task SendMessage_TimeoutNegative_DoesNotTimeout()
         {
             using var app = TestSetup.Create();
-            app.Model.ResponseTimeout = -1;
+            app.Controller.ResponseTimeout = -1;
 
-            var requestTask = app.Model.SendMessageAsync(CommandName);
+            var requestTask = app.Controller.SendMessageAsync(null, CommandName);
             await Task.Delay(50);
             await app.WriteServerMessageAsync(GetResponseSimple());
             await requestTask;
@@ -152,11 +152,11 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task SendMessage_TimeoutZero_ThrowsException()
         {
             using var app = TestSetup.Create();
-            app.Model.ResponseTimeout = 0;
+            app.Controller.ResponseTimeout = 0;
 
             async Task Act()
             {
-                var requestTask = app.Model.SendMessageAsync(CommandName);
+                var requestTask = app.Controller.SendMessageAsync(null, CommandName);
                 await Task.Delay(50);
                 await app.WriteServerMessageAsync(GetResponseSimple());
                 var response = await requestTask;
@@ -169,7 +169,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task SendMessage_ConcurrentRequests_ReceivesAllResponses()
         {
             using var app = TestSetup.Create();
-            app.Model.LogEnabled = true;
+            app.Controller.LogEnabled = true;
             const int Concurrent = 10;
             var requests = new int[Concurrent];
             for (var i = 0; i < Concurrent; i++)
@@ -179,7 +179,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
 
             try
             {
-                var tasksClient = requests.ForEachAsync(x => app.Model.SendMessageAsync(CommandName));
+                var tasksClient = requests.ForEachAsync(x => app.Controller.SendMessageAsync(null, CommandName));
                 await Task.Delay(10);
                 var tasksServer = requests.ForEachAsync(x => app.WriteServerMessageAsync(GetResponseSimple(x)));
                 await Task.Delay(100);
@@ -187,7 +187,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             }
             finally
             {
-                _output.WriteLine(app.Model?.Log?.ToString());
+                _output.WriteLine(app.Controller?.Log?.ToString());
             }
 
             // Success: No freeze and no crash.

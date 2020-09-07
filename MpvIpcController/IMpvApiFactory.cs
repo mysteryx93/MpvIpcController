@@ -23,12 +23,12 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="pipeName">The name of the IPC pipe name.</param>
         /// <returns>A connected MpvController.</returns>
         /// <exception cref="Win32Exception">An error occurred when opening the associated file.</exception>
-        Task<IMpvApi> StartAsync(string mpvPath, string pipeName = "mpvpipe");
+        Task<MpvApi> StartAsync(string mpvPath, string pipeName = "mpvpipe");
         /// <summary>
         /// Connects to an existing instance of MPV via specified IPC pipe name.
         /// </summary>
         /// <param name="pipeName">The IPC pipe name to connect to.</param>
         /// <returns>A connected MpvController.</returns>
-        Task<IMpvApi> ConnectAsync(string pipeName);
+        Task<MpvApi> ConnectAsync(string pipeName);
     }
 }
