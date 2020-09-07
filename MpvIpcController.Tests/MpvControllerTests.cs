@@ -1,73 +1,20 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipes;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController.Tests
 {
-    public class MpvControllerTests : IDisposable
+    public class MpvControllerTests
     {
         private readonly ITestOutputHelper _output;
 
         public MpvControllerTests(ITestOutputHelper output)
         {
             _output = output;
-        }
-
-        private const string PipeName = "testpipe";
-        [NotNull]
-        private NamedPipeServerStream? _server;
-        [NotNull]
-        private NamedPipeClientStream? _client;
-        private readonly byte[] _readBuffer = new byte[1];
-        [NotNull]
-        private IMpvController? _model;
-        private readonly SemaphoreSlim _semaphoreResponse = new SemaphoreSlim(1, 1);
-
-        private void InitConnection()
-        {
-            _server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances,
-                                                    PipeTransmissionMode.Byte,
-                                                    PipeOptions.Asynchronous);
-            _client = new NamedPipeClientStream(".", PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-            _client.Connect();
-            _server.WaitForConnection();
-            BeginReadLoop();
-            _model = new MpvController(_client);
-        }
-
-        private void BeginReadLoop()
-        {
-            _server!.BeginRead(_readBuffer, 0, 1, DataReceived, null);
-        }
-
-        private void DataReceived(IAsyncResult ar)
-        {
-            if (_server.EndRead(ar) > 0)
-            {
-                BeginReadLoop();
-            }
-        }
-
-        private async Task WriteServerMessageAsync(string message)
-        {
-            var data = Encoding.UTF8.GetBytes(message).Append(Convert.ToByte('\n')).ToArray();
-            await _semaphoreResponse.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                await _server.WriteAsync(data).ConfigureAwait(false);
-            }
-            finally
-            {
-                _semaphoreResponse.Release();
-            }
         }
 
         private const string CommandName = "loadfile";
@@ -79,14 +26,14 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [Fact]
         public async Task EventReceived_Triggered_ContainsData()
         {
-            InitConnection();
+            using var app = TestSetup.Create();
 
             IDictionary<string, object?>? data = null;
-            _model.EventReceived += (s, e) =>
+            app.Model.EventReceived += (s, e) =>
             {
                 data = e.Event.Data;
             };
-            await WriteServerMessageAsync(EventMessage);
+            await app.WriteServerMessageAsync(EventMessage);
             await Task.Delay(50);
 
             Assert.NotNull(data);
@@ -96,10 +43,10 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [Fact]
         public async Task SendMessage_CommandSimple_ReceivesResponse()
         {
-            InitConnection();
+            using var app = TestSetup.Create();
 
-            var requestTask = _model.SendMessageAsync(CommandName);
-            await WriteServerMessageAsync(GetResponseSimple());
+            var requestTask = app.Model.SendMessageAsync(CommandName);
+            await app.WriteServerMessageAsync(GetResponseSimple());
             var response = await requestTask;
 
             Assert.Null(response);
@@ -108,10 +55,10 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [Fact]
         public async Task SendMessage_CommandWithParams_ReceivesResponseWithInt()
         {
-            InitConnection();
+            using var app = TestSetup.Create();
 
-            var requestTask = _model.SendMessageAsync(CommandName);
-            await WriteServerMessageAsync(GetResponseWithInt());
+            var requestTask = app.Model.SendMessageAsync(CommandName);
+            await app.WriteServerMessageAsync(GetResponseWithInt());
             var response = await requestTask;
 
             Assert.IsType<int>(response);
@@ -120,38 +67,98 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [Fact]
         public async Task SendMessage_CommandWithParams_ReceivesResponseWithArray()
         {
-            InitConnection();
+            using var app = TestSetup.Create();
 
-            var requestTask = _model.SendMessageAsync(CommandName);
-            await WriteServerMessageAsync(GetResponseWithArray());
+            var requestTask = app.Model.SendMessageAsync(CommandName);
+            await app.WriteServerMessageAsync(GetResponseWithArray());
             var response = await requestTask;
 
             Assert.NotEmpty((IEnumerable?)response);
         }
 
         [Fact]
+        public async Task SendMessage_CommandWithNullParams_IgnoreNullParams()
+        {
+            using var app = TestSetup.Create();
+
+            var requestTask = app.Model.SendMessageAsync(CommandName, null, null);
+            await app.WriteServerMessageAsync(GetResponseWithArray());
+            await requestTask;
+
+            Assert.DoesNotContain("null", app.ServerLog.ToString(), StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("abc")]
+        public async Task SendMessage_CommandWithParamAndNull_ContainsParamButNotNull(string param)
+        {
+            using var app = TestSetup.Create();
+
+            var requestTask = app.Model.SendMessageAsync(CommandName, param, null);
+            await app.WriteServerMessageAsync(GetResponseWithArray());
+            await requestTask;
+
+            var log = app.ServerLog.ToString();
+            Assert.Contains(param, log, StringComparison.InvariantCulture);
+            Assert.DoesNotContain("null", log, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("abc")]
+        public async Task SendMessage_CommandWithNullParamNull_ContainsNullAndParam(string param)
+        {
+            using var app = TestSetup.Create();
+
+            var requestTask = app.Model.SendMessageAsync(CommandName, null, param, null);
+            await app.WriteServerMessageAsync(GetResponseWithArray());
+            await requestTask;
+
+            var log = app.ServerLog.ToString();
+            Assert.Contains(param, log, StringComparison.InvariantCulture);
+            Assert.Contains("null", log, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("abc")]
+        [InlineData("ABC")]
+        [InlineData(1555)]
+        [InlineData(-1555)]
+        [InlineData(1.555)]
+        [InlineData(-1.555)]
+        public async Task SendMessage_CommandWithParam_ServerReceivesParam(object param)
+        {
+            using var app = TestSetup.Create();
+
+            var requestTask = app.Model.SendMessageAsync(CommandName, param);
+            await app.WriteServerMessageAsync(GetResponseWithArray());
+            await requestTask;
+
+            Assert.Contains(param?.ToString(), app.ServerLog.ToString(), StringComparison.InvariantCulture);
+        }
+
+        [Fact]
         public async Task SendMessage_TimeoutNegative_DoesNotTimeout()
         {
-            InitConnection();
-            _model.ResponseTimeout = -1;
+            using var app = TestSetup.Create();
+            app.Model.ResponseTimeout = -1;
 
-            var requestTask = _model.SendMessageAsync(CommandName);
+            var requestTask = app.Model.SendMessageAsync(CommandName);
             await Task.Delay(50);
-            await WriteServerMessageAsync(GetResponseSimple());
+            await app.WriteServerMessageAsync(GetResponseSimple());
             await requestTask;
         }
 
         [Fact]
         public async Task SendMessage_TimeoutZero_ThrowsException()
         {
-            InitConnection();
-            _model.ResponseTimeout = 0;
+            using var app = TestSetup.Create();
+            app.Model.ResponseTimeout = 0;
 
             async Task Act()
             {
-                var requestTask = _model.SendMessageAsync(CommandName);
+                var requestTask = app.Model.SendMessageAsync(CommandName);
                 await Task.Delay(50);
-                await WriteServerMessageAsync(GetResponseSimple());
+                await app.WriteServerMessageAsync(GetResponseSimple());
                 var response = await requestTask;
             }
 
@@ -161,8 +168,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [Fact]
         public async Task SendMessage_ConcurrentRequests_ReceivesAllResponses()
         {
-            InitConnection();
-            _model.LogEnabled = true;
+            using var app = TestSetup.Create();
+            app.Model.LogEnabled = true;
             const int Concurrent = 10;
             var requests = new int[Concurrent];
             for (var i = 0; i < Concurrent; i++)
@@ -172,40 +179,18 @@ namespace HanumanInstitute.MpvIpcController.Tests
 
             try
             {
-                var tasksClient = requests.AsyncParallelForEach(x => _model.SendMessageAsync(CommandName));
+                var tasksClient = requests.ForEachAsync(x => app.Model.SendMessageAsync(CommandName));
                 await Task.Delay(10);
-                var tasksServer = requests.AsyncParallelForEach(x => WriteServerMessageAsync(GetResponseSimple(x)));
+                var tasksServer = requests.ForEachAsync(x => app.WriteServerMessageAsync(GetResponseSimple(x)));
                 await Task.Delay(100);
                 await Task.WhenAll(tasksClient, tasksServer).ConfigureAwait(false);
             }
             finally
             {
-                _output.WriteLine(_model?.Log?.ToString());
+                _output.WriteLine(app.Model?.Log?.ToString());
             }
 
             // Success: No freeze and no crash.
-        }
-
-        private bool _disposedValue;
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _client?.Dispose();
-                    _server?.Dispose();
-                    _semaphoreResponse.Dispose();
-                    _model?.Dispose();
-                }
-                _disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

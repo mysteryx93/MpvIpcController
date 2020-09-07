@@ -16,6 +16,10 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         int ResponseTimeout { get; set; }
         /// <summary>
+        /// Gets or sets whether to wait for server response when sending commands.
+        /// </summary>
+        bool WaitForResponse { get; set; }
+        /// <summary>
         /// Gets or sets whether to keep a log of communication data.
         /// </summary>
         bool LogEnabled { get; set; }
@@ -29,6 +33,6 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="commandName">The command to send.</param>
         /// <param name="args">Additional command parameters.</param>
         /// <returns>The server's response to the command.</returns>
-        Task<object?> SendMessageAsync(string commandName, params object[] args);
+        Task<object?> SendMessageAsync(string commandName, params object?[] args);
     }
 }

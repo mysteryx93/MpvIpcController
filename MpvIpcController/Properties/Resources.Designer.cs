@@ -59,14 +59,5 @@ namespace HanumanInstitute.MpvIpcController.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is null or empty..
-        /// </summary>
-        internal static string ArgumentNullOrEmpty {
-            get {
-                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
-            }
-        }
     }
 }

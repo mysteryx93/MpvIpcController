@@ -1,3 +1,8 @@
 # EditorConfig is awesome: https://EditorConfig.org
 
 dotnet_code_quality.CA1062.null_check_validation_methods = CheckNotNull|CheckNotNullOrEmpty|CheckAssignableFrom|CheckDerivesFrom
+
+[*.cs]
+
+# CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = none

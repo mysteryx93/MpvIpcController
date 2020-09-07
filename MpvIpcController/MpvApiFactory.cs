@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipes;
 using System.Threading.Tasks;
+using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {
@@ -17,9 +17,6 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvController : IDisposable, IMpvController
     {
         private readonly NamedPipeClientStream _connection;
-        private const int InBufferSize = 1024;
-        private readonly byte[] _readBuffer = new byte[InBufferSize];
-        private int _readBufferPos;
         private int _requestId;
         private readonly List<MpvResponse> _responses = new List<MpvResponse>();
         private readonly ManualResetEventSlim _waitResponse = new ManualResetEventSlim(true);
@@ -27,6 +24,7 @@ namespace HanumanInstitute.MpvIpcController
         private bool _logEnabled;
         private readonly object _lockLogEnabled = new object();
         private readonly SemaphoreSlim _semaphoreSendMessage = new SemaphoreSlim(1, 1);
+        private readonly PipeStreamListener _listener;
 
         /// <summary>
         /// Gets a text log of communication data from both directions.
@@ -50,7 +48,8 @@ namespace HanumanInstitute.MpvIpcController
                 throw new ArgumentException("Connection must support both reading and writing.");
             }
 
-            BeginReadLoop();
+            _listener = new PipeStreamListener(connection, MessageReceived);
+            _listener.Start();
         }
 
         /// <summary>
@@ -61,6 +60,11 @@ namespace HanumanInstitute.MpvIpcController
             get => _responseTimeout;
             set => _responseTimeout = value >= 0 ? value : -1;
         }
+
+        /// <summary>
+        /// Gets or sets whether to wait for server response when sending commands.
+        /// </summary>
+        public bool WaitForResponse { get; set; } = true;
 
         /// <summary>
         /// Gets or sets whether to keep a log of communication data.
@@ -86,41 +90,6 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
-        /// Starts listening to messages over the connection stream.
-        /// </summary>
-        private void BeginReadLoop()
-        {
-            _connection!.BeginRead(_readBuffer, _readBufferPos, 1, DataReceived, null);
-        }
-
-        /// <summary>
-        /// Occurs for each byte received from the connection stream.
-        /// We must read byte per byte until we find '\n' since we don't know the message length.
-        /// </summary>
-        private void DataReceived(IAsyncResult ar)
-        {
-            var bytesRead = _connection!.EndRead(ar);
-            // Stop reading if we receive no data.
-            if (bytesRead == 1)
-            {
-                if (_readBuffer[_readBufferPos++] == '\n')
-                {
-                    // Full message is received.
-                    var message = Encoding.UTF8.GetString(_readBuffer, 0, _readBufferPos);
-                    _readBufferPos = 0;
-                    MessageReceived(message);
-                }
-                else if (_readBufferPos > InBufferSize)
-                {
-                    throw new IOException("Read buffer is full.");
-                }
-
-                // Continue reading in loop.
-                BeginReadLoop();
-            }
-        }
-
-        /// <summary>
         /// Occurs when a full message has been received.
         /// </summary>
         /// <param name="message">The message received from the server in JSON format.</param>
@@ -128,7 +97,7 @@ namespace HanumanInstitute.MpvIpcController
         {
             if (string.IsNullOrEmpty(message)) { return; }
 
-            Log?.Append(message);
+            LogAppend(message);
 
             var msg = MpvParser.Parse(message);
             if (msg is MpvEvent msgEvent)
@@ -153,8 +122,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="commandName">The command to send.</param>
         /// <param name="args">Additional command parameters.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<object?> SendMessageAsync(string commandName, params object[] args)
+        public async Task<object?> SendMessageAsync(string commandName, params object?[] args)
         {
+            // Copy parameters into a new list beginning with commandName.
             var cmd = new object[args.Length + 1];
             cmd[0] = commandName;
             if (args.Length > 0)
@@ -162,6 +132,25 @@ namespace HanumanInstitute.MpvIpcController
                 args.CopyTo(cmd, 1);
             }
 
+            // Remove null values at the end.
+            var cmdLength = cmd.Length;
+            for (var i = cmd.Length - 1; i >= 0; i--)
+            {
+                if (cmd[i] == null)
+                {
+                    cmdLength--;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (cmdLength != cmd.Length)
+            {
+                Array.Resize(ref cmd, cmdLength);
+            }
+
+            // Prepare the request.
             var request = new MpvRequest()
             {
                 Command = cmd,
@@ -170,7 +159,7 @@ namespace HanumanInstitute.MpvIpcController
             var jsonString = System.Text.Json.JsonSerializer.Serialize(request) + '\n';
             var jsonBytes = Encoding.UTF8.GetBytes(jsonString);
 
-            Log?.Append(jsonString);
+            // Send the request.
             await _semaphoreSendMessage.WaitAsync().ConfigureAwait(false);
             try
             {
@@ -180,46 +169,55 @@ namespace HanumanInstitute.MpvIpcController
             {
                 _semaphoreSendMessage.Release();
             }
+            LogAppend(jsonString);
 
-            // Wait for response with matching RequestId.
-            var watch = new Stopwatch();
-            watch.Start();
-            var response = FindResponse(request.RequestId.Value);
-            while (response == null && (ResponseTimeout < 0 || watch.ElapsedMilliseconds < ResponseTimeout))
+
+            if (WaitForResponse)
             {
-                // Calculate wait timeout.
-                var timeout = 1000;
-                if (ResponseTimeout > -1)
+                // Wait for response with matching RequestId.
+                var watch = new Stopwatch();
+                watch.Start();
+                var response = FindResponse(request.RequestId.Value);
+                while (response == null && (ResponseTimeout < 0 || watch.ElapsedMilliseconds < ResponseTimeout))
                 {
-                    timeout = (int)(ResponseTimeout - watch.ElapsedMilliseconds);
-                    timeout = timeout < 0 ? 0 : timeout > 1000 ? 1000 : timeout;
+                    // Calculate wait timeout.
+                    var timeout = 1000;
+                    if (ResponseTimeout > -1)
+                    {
+                        timeout = (int)(ResponseTimeout - watch.ElapsedMilliseconds);
+                        timeout = timeout < 0 ? 0 : timeout > 1000 ? 1000 : timeout;
+                    }
+
+                    // Wait until any message is received.
+                    _waitResponse.Reset();
+                    _waitResponse.Wait(timeout);
+                    response = FindResponse(request.RequestId.Value);
                 }
 
-                // Wait until any message is received.
-                _waitResponse.Reset();
-                _waitResponse.Wait(timeout);
-                response = FindResponse(request.RequestId.Value);
-            }
+                // Timeout.
+                if (response == null)
+                {
+                    throw new TimeoutException($"A response from MPV to request_id={request.RequestId.Value} was not received before timeout.");
+                }
+                else
+                {
+                    // Remove response from list.
+                    lock (_responses)
+                    {
+                        _responses.Remove(response);
+                    }
+                }
 
-            // Timeout.
-            if (response == null)
-            {
-                throw new TimeoutException($"A response from MPV to request_id={request.RequestId.Value} was not received before timeout.");
+                if (response.Error != "success")
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", commandName, response.Error));
+                }
+                return response.Data;
             }
             else
             {
-                // Remove response from list.
-                lock (_responses)
-                {
-                    _responses.Remove(response);
-                }
+                return null;
             }
-
-            if (response.Error != "success")
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", request.Command, response.Error));
-            }
-            return response.Data;
         }
 
         /// <summary>
@@ -235,6 +233,21 @@ namespace HanumanInstitute.MpvIpcController
             }
         }
 
+        /// <summary>
+        /// Adds a message to the log if enabled.
+        /// </summary>
+        /// <param name="message">The message to append to the log.</param>
+        private void LogAppend(string message)
+        {
+            if (Log != null)
+            {
+                lock (Log)
+                {
+                    Log?.Append(message);
+                }
+            }
+        }
+
 
         private bool _disposedValue;
         protected virtual void Dispose(bool disposing)
@@ -243,6 +256,7 @@ namespace HanumanInstitute.MpvIpcController
             {
                 if (disposing)
                 {
+                    _listener.Dispose();
                     _connection?.Dispose();
                     _waitResponse.Dispose();
                     _semaphoreSendMessage.Dispose();
