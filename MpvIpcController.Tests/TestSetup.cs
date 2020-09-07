@@ -63,6 +63,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             }
         }
 
+
         private bool _disposedValue;
         protected virtual void Dispose(bool disposing)
         {

@@ -15,30 +15,45 @@ namespace HanumanInstitute.MpvIpcController.Tests
         }
 
         [Fact]
-        public async Task SendMessage_ClientName_ReturnsClientName()
+        public async Task GetClientNameAsync_NoArg_ReturnsClientName()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            var response = await app.Api.GetClientName();
+            var response = await app.Api.GetClientNameAsync();
 
-            await ValidateAsync(response, response.Length > 0, app);
+            Assert.NotEmpty(response);
+            await app.LogAndQuitAsync(_output);
         }
 
         [Fact]
-        public async Task SendMessage_GetVersion_ReturnsVersion()
+        public async Task GetVersionAsync_NoArg_ReturnsVersion()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            var response = await app.Api.GetVersion();
+            var response = await app.Api.GetVersionAsync();
 
-            await ValidateAsync(response, response > 0, app);
+            Assert.True(response > 0);
+            await app.LogAndQuitAsync(_output);
         }
 
-        private async Task ValidateAsync(object response, bool valid, TestIntegrationSetup app)
+        [Fact]
+        public async Task LoadFile_WithPrefix_ReturnsSuccess()
         {
-            _output.WriteLine(response.ToString());
-            Assert.True(valid);
-            await app.QuitAsync();
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            await app.Api.LoadFileAsync(app.SampleClip, options: new MpvCommandOptions().NoOsd());
+
+            await app.LogAndQuitAsync(_output);
+        }
+
+        [Fact]
+        public async Task LoadFile_DoNotWaitInvalidArg_DoesNotReceiveError()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            await app.Controller.SendMessageAsync(options: new MpvCommandOptions().DoNotWait(), "invalidcommand");
+
+            await app.LogAndQuitAsync(_output);
         }
     }
 }

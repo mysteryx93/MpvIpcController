@@ -21,7 +21,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            await app.QuitAsync();
+            await app.LogAndQuitAsync(_output);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             await Task.Delay(10);
 
             Assert.NotEmpty(received);
-            await app.QuitAsync();
+            await app.LogAndQuitAsync(_output);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
 
             await app.Controller.SendMessageAsync(null, "loadfile", app.SampleClip);
 
-            await app.QuitAsync();
+            await app.LogAndQuitAsync(_output);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             }
 
             // Success: No freeze and no crash.
-            await app.QuitAsync();
+            await app.LogAndQuitAsync(_output);
         }
     }
 }

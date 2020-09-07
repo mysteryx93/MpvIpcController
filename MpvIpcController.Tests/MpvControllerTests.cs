@@ -18,9 +18,9 @@ namespace HanumanInstitute.MpvIpcController.Tests
         }
 
         private const string CommandName = "loadfile";
-        private string GetResponseSimple(int requestId = 0) => $@"{{ ""data"": null, ""error"": ""success"", ""request_id"": {requestId} }}";
-        private string GetResponseWithInt(int requestId = 0) => $@"{{ ""data"": 15, ""error"": ""success"", ""request_id"": {requestId} }}";
-        private string GetResponseWithArray(int requestId = 0) => $@"{{ ""data"": [""a"", ""b""], ""error"": ""success"", ""request_id"": {requestId} }}";
+        private string GetResponseSimple(int requestId = 1) => $@"{{ ""data"": null, ""error"": ""success"", ""request_id"": {requestId} }}";
+        private string GetResponseWithInt(int requestId = 1) => $@"{{ ""data"": 15, ""error"": ""success"", ""request_id"": {requestId} }}";
+        private string GetResponseWithArray(int requestId = 1) => $@"{{ ""data"": [""a"", ""b""], ""error"": ""success"", ""request_id"": {requestId} }}";
         private const string EventMessage = @"{ ""event"": ""property-change"", ""id"": 1, ""data"": ""52.000000"", ""name"": ""volume"" }";
 
         [Fact]
@@ -174,7 +174,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             var requests = new int[Concurrent];
             for (var i = 0; i < Concurrent; i++)
             {
-                requests[i] = i;
+                requests[i] = i + 1;
             }
 
             try

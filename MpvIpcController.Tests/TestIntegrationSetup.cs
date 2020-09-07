@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
-using HanumanInstitute.Validators;
+using Xunit.Abstractions;
 
 namespace HanumanInstitute.MpvIpcController.Tests
 {
@@ -31,12 +31,13 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             var factory = new MpvApiFactory();
             Api = await factory.StartAsync(MpvPath, $"mpvtest{_pipeId++}");
+            Api.Controller.LogEnabled = true;
         }
 
-        public async Task QuitAsync()
+        public async Task LogAndQuitAsync(ITestOutputHelper? output)
         {
-            await Api.Quit();
-            await Task.Delay(100);
+            output?.WriteLine(Controller?.Log?.ToString());
+            await Api.QuitAsync(options: new MpvCommandOptions().DoNotWait());
         }
 
 

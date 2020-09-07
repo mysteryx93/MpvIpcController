@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO.Pipes;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using HanumanInstitute.Validators;
@@ -17,7 +18,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvController : IDisposable, IMpvController
     {
         private readonly NamedPipeClientStream _connection;
-        private int _requestId;
+        private int _requestId = 1;
         private readonly List<MpvResponse> _responses = new List<MpvResponse>();
         private readonly ManualResetEventSlim _waitResponse = new ManualResetEventSlim(true);
         private int _responseTimeout = 3000;
@@ -100,7 +101,7 @@ namespace HanumanInstitute.MpvIpcController
                 // Raise event.
                 EventReceived?.Invoke(this, new MpvMessageEventArgs(msgEvent));
             }
-            else if (msg is MpvResponse msgResponse && msgResponse.RequestID.HasValue)
+            else if (msg is MpvResponse msgResponse && (msgResponse.RequestID ?? 0) > 0)
             {
                 // Add to list of responses to be retrieved by QueryId.
                 lock (_responses)
@@ -121,8 +122,9 @@ namespace HanumanInstitute.MpvIpcController
         {
             cmd.CheckNotNullOrEmpty(nameof(cmd));
 
-            // Remove null values at the end.
+            // Append prefixes and remove null values at the end.
             var cmdLength = cmd.Length;
+            var prefixCount = options?.Prefixes?.Count ?? 0;
             for (var i = cmd.Length - 1; i >= 0; i--)
             {
                 if (cmd[i] == null)
@@ -134,16 +136,22 @@ namespace HanumanInstitute.MpvIpcController
                     break;
                 }
             }
-            if (cmdLength != cmd.Length)
+            if (cmdLength != cmd.Length || prefixCount > 0)
             {
-                Array.Resize(ref cmd, cmdLength);
+                var cmd2 = cmd;
+                cmd = new object?[cmdLength + prefixCount];
+                for (var i = 0; i < prefixCount; i++)
+                {
+                    cmd[i] = options!.Prefixes![i];
+                }
+                Array.Copy(cmd2, 0, cmd, prefixCount, cmdLength);
             }
 
             // Prepare the request.
             var request = new MpvRequest()
             {
                 Command = cmd,
-                RequestId = _requestId++
+                RequestId = (options == null || options.WaitForResponse) ? (int?)_requestId++ : 0
             };
             var jsonString = System.Text.Json.JsonSerializer.Serialize(request) + '\n';
             var jsonBytes = Encoding.UTF8.GetBytes(jsonString);
@@ -160,54 +168,51 @@ namespace HanumanInstitute.MpvIpcController
             }
             LogAppend(jsonString);
 
-
-            if (options == null || options.WaitForResponse)
-            {
-                // Wait for response with matching RequestId.
-                var watch = new Stopwatch();
-                watch.Start();
-                var response = FindResponse(request.RequestId.Value);
-                var maxTimeout = options?.ResponseTimeout ?? ResponseTimeout;
-                while (response == null && (maxTimeout < 0 || watch.ElapsedMilliseconds < maxTimeout))
-                {
-                    // Calculate wait timeout.
-                    var timeout = 1000;
-                    if (ResponseTimeout > -1)
-                    {
-                        timeout = (int)(ResponseTimeout - watch.ElapsedMilliseconds);
-                        timeout = timeout < 0 ? 0 : timeout > 1000 ? 1000 : timeout;
-                    }
-
-                    // Wait until any message is received.
-                    _waitResponse.Reset();
-                    _waitResponse.Wait(timeout);
-                    response = FindResponse(request.RequestId.Value);
-                }
-
-                // Timeout.
-                if (response == null)
-                {
-                    throw new TimeoutException($"A response from MPV to request_id={request.RequestId.Value} was not received before timeout.");
-                }
-                else
-                {
-                    // Remove response from list.
-                    lock (_responses)
-                    {
-                        _responses.Remove(response);
-                    }
-                }
-
-                if (response.Error != "success")
-                {
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", cmd[0], response.Error));
-                }
-                return response.Data;
-            }
-            else
+            if (!request.RequestId.HasValue)
             {
                 return null;
             }
+
+            // Wait for response with matching RequestId.
+            var watch = new Stopwatch();
+            watch.Start();
+            var response = FindResponse(request.RequestId.Value);
+            var maxTimeout = options?.ResponseTimeout ?? ResponseTimeout;
+            while (response == null && (maxTimeout < 0 || watch.ElapsedMilliseconds < maxTimeout))
+            {
+                // Calculate wait timeout.
+                var timeout = 1000;
+                if (ResponseTimeout > -1)
+                {
+                    timeout = (int)(ResponseTimeout - watch.ElapsedMilliseconds);
+                    timeout = timeout < 0 ? 0 : timeout > 1000 ? 1000 : timeout;
+                }
+
+                // Wait until any message is received.
+                _waitResponse.Reset();
+                _waitResponse.Wait(timeout);
+                response = FindResponse(request.RequestId.Value);
+            }
+
+            // Timeout.
+            if (response == null)
+            {
+                throw new TimeoutException($"A response from MPV to request_id={request.RequestId.Value} was not received before timeout.");
+            }
+            else
+            {
+                // Remove response from list.
+                lock (_responses)
+                {
+                    _responses.Remove(response);
+                }
+            }
+
+            if (response.Error != "success")
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", cmd[0], response.Error));
+            }
+            return response.Data;
         }
 
         /// <summary>
