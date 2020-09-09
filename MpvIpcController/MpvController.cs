@@ -115,8 +115,8 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Sends specified message to MPV.
         /// </summary>
-        /// <param name="commandName">The command to send.</param>
-        /// <param name="args">Additional command parameters.</param>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
         public async Task<object?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
         {

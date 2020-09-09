@@ -47,7 +47,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         }
 
         [Fact]
-        public async Task LoadFile_DoNotWaitInvalidArg_DoesNotReceiveError()
+        public async Task InvalidCommand_DoNotWait_DoesNotReceiveError()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 

@@ -65,7 +65,7 @@ namespace HanumanInstitute.MpvIpcController
             {
                 JsonValueKind.Null => null,
                 JsonValueKind.String => data.GetString(),
-                JsonValueKind.Number => data.GetInt32(),
+                JsonValueKind.Number => data.GetDouble(),
                 JsonValueKind.Object => ParseList(data),
                 JsonValueKind.False => false,
                 JsonValueKind.True => true,
