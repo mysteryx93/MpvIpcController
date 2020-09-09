@@ -1,18 +1,31 @@
 ﻿using System;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace HanumanInstitute.MpvIpcController
 {
+    /// <summary>
+    /// Represents a read/write MPV indexed property with an integer index.
+    /// </summary>
+    /// <typeparam name="T">The return type of the property.</typeparam>
+    public class MpvPropertyIndexWrite<T> : MpvPropertyIndexWrite<T, T, int>
+        where T : struct
+    {
+        public MpvPropertyIndexWrite(MpvApi api, string name, T defaultValue) : base(api, name, defaultValue)
+        {
+        }
+    }
+
     /// <summary>
     /// Represents a read/write MPV indexed property.
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
     /// <typeparam name="TIndex">The indexer data type.</typeparam>
     public class MpvPropertyIndexWrite<T, TIndex> : MpvPropertyIndexWrite<T, T, TIndex>
+        where T : struct
     {
         public MpvPropertyIndexWrite(MpvApi api, string name, T defaultValue) : base(api, name, defaultValue)
-        { }
+        {
+        }
     }
 
     /// <summary>
@@ -22,31 +35,14 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
     /// <typeparam name="TIndex">The indexer data type.</typeparam>
     public class MpvPropertyIndexWrite<TResult, TApi, TIndex> : MpvPropertyIndexRead<TResult, TApi, TIndex>
+        where TApi : struct
     {
-        public MpvPropertyIndexWrite(MpvApi api, string name, TApi defaultValue, PropertyParser<TResult, TApi>? parser = null, PropertyFormatter<TApi, TResult>? formatter = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyIndexWrite(MpvApi api, string name, TApi defaultValue, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
         {
-            if (formatter != null)
-            {
-                Formatter = formatter;
-            }
-            else
-            {
-                // Default formatter if TIndex and TApi are the same.
-                Formatter = x =>
-                {
-                    if (typeof(TResult) == typeof(TApi))
-                    {
-                        return (TApi)Convert.ChangeType(x, typeof(TApi), CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Formatter must be specified if TResult and TApi are different.", nameof(formatter));
-                    }
-                };
-            }
+            Formatter = formatter ?? DefaultFormatter;
         }
 
-        protected PropertyFormatter<TApi, TResult> Formatter { get; private set; }
+        protected PropertyFormatter<TResult, TApi?> Formatter { get; private set; }
 
         /// <summary>
         /// Set the given property or option to the given value.

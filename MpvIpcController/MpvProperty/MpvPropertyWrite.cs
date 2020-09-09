@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace HanumanInstitute.MpvIpcController
@@ -8,9 +7,10 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read/write MPV property.
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyWrite<T> : MpvPropertyWrite<T, T>
+    public class MpvPropertyWrite<T> : MpvPropertyWrite<T?, T>
+        where T : struct
     {
-        public MpvPropertyWrite(MpvApi api, string name, T defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyWrite(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
         {
         }
     }
@@ -21,31 +21,14 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
     public class MpvPropertyWrite<TResult, TApi> : MpvPropertyRead<TResult, TApi>
+        where TApi : struct
     {
-        public MpvPropertyWrite(MpvApi api, string name, TApi defaultValue, PropertyParser<TResult, TApi>? parser = null, PropertyFormatter<TApi, TResult>? formatter = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyWrite(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
         {
-            if (formatter != null)
-            {
-                Formatter = formatter;
-            }
-            else
-            {
-                // Default formatter if TIndex and TApi are the same.
-                Formatter = x =>
-                {
-                    if (typeof(TResult) == typeof(TApi))
-                    {
-                        return (TApi)Convert.ChangeType(x, typeof(TApi), CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Formatter must be specified if TResult and TApi are different.", nameof(formatter));
-                    }
-                };
-            }
+            Formatter = formatter ?? DefaultFormatter;
         }
 
-        protected PropertyFormatter<TApi, TResult> Formatter { get; private set; }
+        protected PropertyFormatter<TResult, TApi?> Formatter { get; private set; }
 
         /// <summary>
         /// Set the given property or option to the given value.

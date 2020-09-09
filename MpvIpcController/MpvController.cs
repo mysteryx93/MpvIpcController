@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Text;
@@ -95,7 +96,7 @@ namespace HanumanInstitute.MpvIpcController
 
             LogAppend(message);
 
-            var msg = MpvParser.Parse(message);
+            var msg = ParseMessage(message);
             if (msg is MpvEvent msgEvent)
             {
                 // Raise event.
@@ -113,12 +114,38 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
+        /// Sends specified message to MPV and returns a nullable value of specified value type.
+        /// </summary>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command values to send.</param>
+        /// <returns>The server's response to the command.</returns>
+        public async Task<T?> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd)
+            where T : struct
+        {
+            var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
+            return ParseDataStruct<T>(result);
+        }
+
+        /// <summary>
+        /// Sends specified message to MPV and returns a class of specified type.
+        /// </summary>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command values to send.</param>
+        /// <returns>The server's response to the command.</returns>
+        public async Task<T?> SendMessageClassAsync<T>(MpvCommandOptions? options, params object?[] cmd)
+            where T : class
+        {
+            var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
+            return ParseDataClass<T>(result);
+        }
+
+        /// <summary>
         /// Sends specified message to MPV.
         /// </summary>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<object?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
+        public async Task<string?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
         {
             cmd.CheckNotNullOrEmpty(nameof(cmd));
 
@@ -151,9 +178,13 @@ namespace HanumanInstitute.MpvIpcController
             var request = new MpvRequest()
             {
                 Command = cmd,
-                RequestId = (options == null || options.WaitForResponse) ? (int?)_requestId++ : 0
+                RequestId = (options == null || options.WaitForResponse) ? (int?)_requestId++ : null
             };
-            var jsonString = System.Text.Json.JsonSerializer.Serialize(request) + '\n';
+            var jsonOptions = new JsonSerializerOptions()
+            {
+                IgnoreNullValues = true
+            };
+            var jsonString = System.Text.Json.JsonSerializer.Serialize(request, jsonOptions) + '\n';
             var jsonBytes = Encoding.UTF8.GetBytes(jsonString);
 
             // Send the request.
@@ -242,6 +273,74 @@ namespace HanumanInstitute.MpvIpcController
                 }
             }
         }
+
+        /// <summary>
+        /// Parses a MPV message and returns either a MpvJsonEvent or MpvJsonResponse.
+        /// </summary>
+        /// <param name="message">The JSON message to parse.</param>
+        /// <returns>An MpvJsonEvent or MpvJsonResponse containing the strongly-typed message content.</returns>
+        private static object? ParseMessage(string message)
+        {
+            // using var reader = new JsonTextReader(new StringReader(message));
+            var reader = JsonDocument.Parse(message);
+            if (reader.RootElement.TryGetProperty("event", out var eventName))
+            {
+                // Event.
+                // ex: { "event": "event_name" }
+                var response = new MpvEvent()
+                {
+                    Event = eventName.GetString()
+                };
+                // Parse additional event args.
+                foreach (var item in reader.RootElement.EnumerateObject())
+                {
+                    if (item.Name != "event")
+                    {
+                        response.Data.Add(item.Name, item.Value.GetRawText());
+                    }
+                }
+                return response;
+            }
+            else if (reader.RootElement.TryGetProperty("request_id", out var requestId))
+            {
+                // Response to a message.
+                // ex: { "error": "success", "data": 1.468135, "request_id": 100 }
+                var response = new MpvResponse()
+                {
+                    RequestID = requestId.GetInt32()
+                };
+                if (reader.RootElement.TryGetProperty("error", out var error))
+                {
+                    response.Error = error.GetString();
+                }
+                if (reader.RootElement.TryGetProperty("data", out var data))
+                {
+                    response.Data = data.ValueKind == JsonValueKind.Null ? null : data.GetRawText();
+                }
+                return response;
+            }
+            else
+            {
+                throw new InvalidDataException($"Unrecognized message: {message}");
+            }
+        }
+
+        private static T ParseData<T>(string data) => (T)Convert.ChangeType(data, typeof(T), CultureInfo.InvariantCulture);
+
+        private static T? ParseDataStruct<T>(string? data)
+            where T : struct
+        {
+            return data != null ? ParseData<T>(data) : default;
+        }
+
+        private static T? ParseDataClass<T>(string? data)
+            where T : class
+        {
+            return typeof(T) == typeof(string) ?
+                (data != null ? ParseData<T>(data) : default) :
+                JsonSerializer.Deserialize<T>(data);
+        }
+
 
 
         private bool _disposedValue;

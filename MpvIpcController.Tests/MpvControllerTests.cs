@@ -57,11 +57,12 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Controller.SendMessageAsync(null, CommandName);
+            var requestTask = app.Controller.SendMessageAsync<int>(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseWithInt());
             var response = await requestTask;
 
             Assert.IsType<int>(response);
+            Assert.True(response.HasValue);
         }
 
         [Fact]
@@ -69,11 +70,12 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Controller.SendMessageAsync(null, CommandName);
+            var requestTask = app.Controller.SendMessageClassAsync<IList<string>>(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             var response = await requestTask;
 
-            Assert.NotEmpty((IEnumerable?)response);
+            Assert.IsNotType<string>(response);
+            Assert.IsAssignableFrom<IEnumerable>(response);
         }
 
         [Fact]

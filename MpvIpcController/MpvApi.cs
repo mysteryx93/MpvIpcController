@@ -28,27 +28,24 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public IMpvController Controller => _mpv;
 
-        private static T ConvertValue<T>(object? value, T defaultValue)
-        {
-            return value == null ? defaultValue : (T)value;
-        }
+        //private static T? ConvertValue<T>(object? value, T? defaultValue)
+        //    where T : struct
+        //{
+        //    return value == null ? defaultValue : (T)value;
+        //}
 
-        /// <summary>
-        /// Sends specified message to MPV.
-        /// </summary>
-        /// <param name="options">Additional command options.</param>
-        /// <param name="cmd">The command values to send.</param>
-        /// <returns>The server's response to the command.</returns>
-        public Task<object?> RunAsync(MpvCommandOptions? options, params object?[] cmd) =>
-            _mpv.SendMessageAsync(options, cmd);
+        //private static T? ConvertValue<T>(object? value, T? defaultValue)
+        //    where T : class
+        //{
+        //    return value == null ? defaultValue : (T)value;
+        //}
 
         /// <summary>
         /// Returns the name of the client as string. This is the string ipc-N with N being an integer number.
         /// </summary>
         public async Task<string> GetClientNameAsync()
         {
-            var response = await _mpv.SendMessageAsync(null, "client_name").ConfigureAwait(false);
-            return response?.ToString() ?? string.Empty;
+            return await _mpv.SendMessageAsync(null, "client_name").ConfigureAwait(false) ?? string.Empty;
         }
 
         /// <summary>
@@ -56,20 +53,31 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public async Task<int> GetClientTimeAsync()
         {
-            var response = await _mpv.SendMessageAsync(null, "get_time_us").ConfigureAwait(false);
-            return ConvertValue<int>(response, 0);
+            return await _mpv.SendMessageAsync<int>(null, "get_time_us").ConfigureAwait(false) ?? 0;
         }
 
         /// <summary>
-        /// Returns the value of the given property. The value will be sent in the data field of the replay message.
+        /// Returns the value of the given property as a nullable value type.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
-        public async Task<T> GetPropertyAsync<T>(string propertyName, T defaultValue)
+        public async Task<T?> GetPropertyAsync<T>(string propertyName)
+            where T : struct
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
-            var response = await _mpv.SendMessageAsync(null, "get_property", propertyName).ConfigureAwait(false);
-            return ConvertValue<T>(response, defaultValue);
+            return await _mpv.SendMessageAsync<T>(null, "get_property", propertyName).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Returns the value of the given property as a class type.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to get.</param>
+        public async Task<T?> GetPropertyClassAsync<T>(string propertyName)
+            where T : class
+        {
+            propertyName.CheckNotNullOrEmpty(nameof(propertyName));
+
+            return await _mpv.SendMessageClassAsync<T>(null, "get_property", propertyName).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -80,8 +88,7 @@ namespace HanumanInstitute.MpvIpcController
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
-            var response = await _mpv.SendMessageAsync(null, "get_property_string", propertyName).ConfigureAwait(false);
-            return response?.ToString() ?? string.Empty;
+            return await _mpv.SendMessageAsync(null, "get_property_string", propertyName).ConfigureAwait(false) ?? string.Empty;
         }
 
         /// <summary>
@@ -168,10 +175,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Returns the client API version the C API of the remote mpv instance provides.
         /// </summary>
-        public async Task<int> GetVersionAsync(MpvCommandOptions? options = null)
+        public async Task<int?> GetVersionAsync(MpvCommandOptions? options = null)
         {
-            var response = await _mpv.SendMessageAsync(options, "get_version").ConfigureAwait(false);
-            return ConvertValue<int>(response, 0);
+            return await _mpv.SendMessageAsync<int>(options, "get_version").ConfigureAwait(false);
         }
 
         /// <summary>
@@ -934,14 +940,14 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Currently played file, with path stripped. If this is an URL, try to undo percent encoding as well. (The result is not necessarily correct, but looks better for display purposes. Use the path property to get an unmodified filename.)
         /// </summary>
-        public MpvPropertyRead<string> FileName => _fileName ??= new MpvPropertyRead<string>(this, "filename", string.Empty);
-        private MpvPropertyRead<string>? _fileName;
+        public MpvPropertyReadClass<string> FileName => _fileName ??= new MpvPropertyReadClass<string>(this, "filename", string.Empty);
+        private MpvPropertyReadClass<string>? _fileName;
 
         /// <summary>
         /// Like the filename property, but if the text contains a ., strip all text after the last .. Usually this removes the file extension.
         /// </summary>
-        public MpvPropertyRead<string> FileNameNoExt => _fileNameNoExt ??= new MpvPropertyRead<string>(this, "filename/no-ext", string.Empty);
-        private MpvPropertyRead<string>? _fileNameNoExt;
+        public MpvPropertyReadClass<string> FileNameNoExt => _fileNameNoExt ??= new MpvPropertyReadClass<string>(this, "filename/no-ext", string.Empty);
+        private MpvPropertyReadClass<string>? _fileNameNoExt;
 
         /// <summary>
         /// Length in bytes of the source file/stream. (This is the same as ${stream-end}. For segmented/multi-part files, this will return the size of the main or manifest file, whatever it is.)
@@ -964,32 +970,32 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Full path of the currently played file. Usually this is exactly the same string you pass on the mpv command line or the loadfile command, even if it's a relative path. If you expect an absolute path, you will have to determine it yourself, for example by using the working-directory property.
         /// </summary>
-        public MpvPropertyRead<string> Path => _path ??= new MpvPropertyRead<string>(this, "path", string.Empty);
-        private MpvPropertyRead<string>? _path;
+        public MpvPropertyReadClass<string> Path => _path ??= new MpvPropertyReadClass<string>(this, "path", string.Empty);
+        private MpvPropertyReadClass<string>? _path;
 
         /// <summary>
         /// The full path to the currently played media. This is different only from path in special cases. In particular, if --ytdl=yes is used, and the URL is detected by youtube-dl, then the script will set this property to the actual media URL. This property should be set only during the on_load or on_load_fail hooks, otherwise it will have no effect (or may do something implementation defined in the future). The property is reset if playback of the current media ends.
         /// </summary>
-        public MpvPropertyRead<string> StreamOpenFileName => _streamOpenFileName ??= new MpvPropertyRead<string>(this, "stream-open-filename", string.Empty);
-        private MpvPropertyRead<string>? _streamOpenFileName;
+        public MpvPropertyReadClass<string> StreamOpenFileName => _streamOpenFileName ??= new MpvPropertyReadClass<string>(this, "stream-open-filename", string.Empty);
+        private MpvPropertyReadClass<string>? _streamOpenFileName;
 
         /// <summary>
         /// If the currently played file has a title tag, use that. Otherwise, return the filename property.
         /// </summary>
-        public MpvPropertyRead<string> MediaTitle => _mediaTitle ??= new MpvPropertyRead<string>(this, "media-title", string.Empty);
-        private MpvPropertyRead<string>? _mediaTitle;
+        public MpvPropertyReadClass<string> MediaTitle => _mediaTitle ??= new MpvPropertyReadClass<string>(this, "media-title", string.Empty);
+        private MpvPropertyReadClass<string>? _mediaTitle;
 
         /// <summary>
         /// Symbolic name of the file format. In some cases, this is a comma-separated list of format names, e.g. mp4 is mov,mp4,m4a,3gp,3g2,mj2 (the list may grow in the future for any format).
         /// </summary>
-        public MpvPropertyRead<string> FileFormat => _fileFormat ??= new MpvPropertyRead<string>(this, "file-format", string.Empty);
-        private MpvPropertyRead<string>? _fileFormat;
+        public MpvPropertyReadClass<string> FileFormat => _fileFormat ??= new MpvPropertyReadClass<string>(this, "file-format", string.Empty);
+        private MpvPropertyReadClass<string>? _fileFormat;
 
         /// <summary>
         /// Filename (full path) of the stream layer filename. (This is probably useless and is almost never different from path.)
         /// </summary>
-        public MpvPropertyRead<string> StreamPath => _streamPath ??= new MpvPropertyRead<string>(this, "stream-path", string.Empty);
-        private MpvPropertyRead<string>? _streamPath;
+        public MpvPropertyReadClass<string> StreamPath => _streamPath ??= new MpvPropertyReadClass<string>(this, "stream-path", string.Empty);
+        private MpvPropertyReadClass<string>? _streamPath;
 
         /// <summary>
         /// Raw byte position in source stream. Technically, this returns the position of the most recent packet passed to a decoder.
@@ -1006,20 +1012,20 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Duration of the current file in seconds. If the duration is unknown, the property is unavailable. Note that the file duration is not always exactly known, so this is an estimate.
         /// </summary>
-        public MpvPropertyRead<double?> Duration => _duration ??= new MpvPropertyRead<double?>(this, "duration", null);
-        private MpvPropertyRead<double?>? _duration;
+        public MpvPropertyRead<double> Duration => _duration ??= new MpvPropertyRead<double>(this, "duration", null);
+        private MpvPropertyRead<double>? _duration;
 
         /// <summary>
         /// Last A/V synchronization difference. Unavailable if audio or video is disabled.
         /// </summary>
-        public MpvPropertyRead<float?> AVSync => _avSync ??= new MpvPropertyRead<float?>(this, "avsync", null);
-        private MpvPropertyRead<float?>? _avSync;
+        public MpvPropertyRead<float> AVSync => _avSync ??= new MpvPropertyRead<float>(this, "avsync", null);
+        private MpvPropertyRead<float>? _avSync;
 
         /// <summary>
         /// Total A-V sync correction done. Unavailable if audio or video is disabled.
         /// </summary>
-        public MpvPropertyRead<float?> TotalAVSyncChange => _totalAVSyncChange ??= new MpvPropertyRead<float?>(this, "total-avsync-change", null);
-        private MpvPropertyRead<float?>? _totalAVSyncChange;
+        public MpvPropertyRead<float> TotalAVSyncChange => _totalAVSyncChange ??= new MpvPropertyRead<float>(this, "total-avsync-change", null);
+        private MpvPropertyRead<float>? _totalAVSyncChange;
 
         /// <summary>
         /// Video frames dropped by decoder, because video is too far behind audio (when using --framedrop=decoder). Sometimes, this may be incremented in other situations, e.g. when video packets are damaged, or the decoder doesn't follow the usual rules. Unavailable if video is disabled.
@@ -1042,8 +1048,8 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// For how many vsyncs a frame is displayed on average. This is available if display-sync is active only. For 30 FPS video on a 60 Hz screen, this will be 2. This is the moving average of what actually has been scheduled, so 24 FPS on 60 Hz will never remain exactly on 2.5, but jitter depending on the last frame displayed.
         /// </summary>
-        public MpvPropertyRead<float?> VSyncRatio => _vSyncRatio ??= new MpvPropertyRead<float?>(this, "vsync-ratio", null);
-        private MpvPropertyRead<float?>? _vSyncRatio;
+        public MpvPropertyRead<float> VSyncRatio => _vSyncRatio ??= new MpvPropertyRead<float>(this, "vsync-ratio", null);
+        private MpvPropertyRead<float>? _vSyncRatio;
 
         /// <summary>
         /// Estimated number of frames delayed due to external circumstances in display-sync mode. Note that in general, mpv has to guess that this is happening, and the guess can be inaccurate.
@@ -1054,94 +1060,94 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Position in current file (0-100). The advantage over using this instead of calculating it out of other properties is that it properly falls back to estimating the playback position from the byte position, if the file duration is not known.
         /// </summary>
-        public MpvPropertyWrite<float?> PercentPos => _percentPos ??= new MpvPropertyWrite<float?>(this, "percent-pos", null);
-        private MpvPropertyWrite<float?>? _percentPos;
+        public MpvPropertyWrite<float> PercentPos => _percentPos ??= new MpvPropertyWrite<float>(this, "percent-pos", null);
+        private MpvPropertyWrite<float>? _percentPos;
 
         /// <summary>
         /// Position in current file in seconds.
         /// </summary>
-        public MpvPropertyWrite<double?> TimePos => _timePos ??= new MpvPropertyWrite<double?>(this, "time-pos", null);
-        private MpvPropertyWrite<double?>? _timePos;
+        public MpvPropertyWrite<double> TimePos => _timePos ??= new MpvPropertyWrite<double>(this, "time-pos", null);
+        private MpvPropertyWrite<double>? _timePos;
 
         /// <summary>
         /// Remaining length of the file in seconds. Note that the file duration is not always exactly known, so this is an estimate.
         /// </summary>
-        public MpvPropertyRead<double?> TimeRemaining => _timeRemaining ??= new MpvPropertyRead<double?>(this, "time-remaining", null);
-        private MpvPropertyRead<double?>? _timeRemaining;
+        public MpvPropertyRead<double> TimeRemaining => _timeRemaining ??= new MpvPropertyRead<double>(this, "time-remaining", null);
+        private MpvPropertyRead<double>? _timeRemaining;
 
         /// <summary>
         /// Current audio playback position in current file in seconds. Unlike time-pos, this updates more often than once per frame. For audio-only files, it is mostly equivalent to time-pos, while for video-only files this property is not available.
         /// </summary>
-        public MpvPropertyRead<double?> AudioPts => _audioPts ??= new MpvPropertyRead<double?>(this, "audio-pts", null);
-        private MpvPropertyRead<double?>? _audioPts;
+        public MpvPropertyRead<double> AudioPts => _audioPts ??= new MpvPropertyRead<double>(this, "audio-pts", null);
+        private MpvPropertyRead<double>? _audioPts;
 
         /// <summary>
         /// TimeRemaining scaled by the current speed.
         /// </summary>
-        public MpvPropertyRead<double?> PlaytimeRemaining => _playtimeRemaining ??= new MpvPropertyRead<double?>(this, "playtime-remaining", null);
-        private MpvPropertyRead<double?>? _playtimeRemaining;
+        public MpvPropertyRead<double> PlaytimeRemaining => _playtimeRemaining ??= new MpvPropertyRead<double>(this, "playtime-remaining", null);
+        private MpvPropertyRead<double>? _playtimeRemaining;
 
         /// <summary>
         /// Position in current file in seconds. Unlike time-pos, the time is clamped to the range of the file. (Inaccurate file durations etc. could make it go out of range. Useful on attempts to seek outside of the file, as the seek target time is considered the current position during seeking.)
         /// </summary>
-        public MpvPropertyWrite<double?> PlaybackTime => _playbackTime ??= new MpvPropertyWrite<double?>(this, "playback-time", null);
-        private MpvPropertyWrite<double?>? _playbackTime;
+        public MpvPropertyWrite<double> PlaybackTime => _playbackTime ??= new MpvPropertyWrite<double>(this, "playback-time", null);
+        private MpvPropertyWrite<double>? _playbackTime;
 
         /// <summary>
         /// Current chapter number. The number of the first chapter is 0.
         /// </summary>
-        public MpvPropertyWrite<int?> Chapter => _chapter ??= new MpvPropertyWrite<int?>(this, "chapter ", null);
-        private MpvPropertyWrite<int?>? _chapter;
+        public MpvPropertyWrite<int> Chapter => _chapter ??= new MpvPropertyWrite<int>(this, "chapter ", null);
+        private MpvPropertyWrite<int>? _chapter;
 
         /// <summary>
         /// Current MKV edition number. Setting this property to a different value will restart playback. The number of the first edition is 0.
         /// Before mpv 0.31.0, this showed the actual edition selected at runtime, if you didn't set the option or property manually. With mpv 0.31.0 and later, this strictly returns the user-set option or property value, and the current-edition property was added to return the runtime selected edition (this matters with --edition=auto, the default).
         /// </summary>
-        public MpvPropertyWrite<int?> Edition => _edition ??= new MpvPropertyWrite<int?>(this, "edition", null);
-        private MpvPropertyWrite<int?>? _edition;
+        public MpvPropertyWrite<int> Edition => _edition ??= new MpvPropertyWrite<int>(this, "edition", null);
+        private MpvPropertyWrite<int>? _edition;
 
         /// <summary>
         /// Currently selected edition. This property is unavailable if no file is loaded, or the file has no editions. (Matroska files make a difference between having no editions and a single edition, which will be reflected by the property, although in practice it does not matter.)
         /// </summary>
-        public MpvPropertyRead<int?> CurrentEdition => _currentEdition ??= new MpvPropertyRead<int?>(this, "current-edition", null);
-        private MpvPropertyRead<int?>? _currentEdition;
+        public MpvPropertyRead<int> CurrentEdition => _currentEdition ??= new MpvPropertyRead<int>(this, "current-edition", null);
+        private MpvPropertyRead<int>? _currentEdition;
 
         /// <summary>
         /// Number of chapters.
         /// </summary>
-        public MpvPropertyRead<int?> Chapters => _chapters ??= new MpvPropertyRead<int?>(this, "chapters", null);
-        private MpvPropertyRead<int?>? _chapters;
+        public MpvPropertyRead<int> Chapters => _chapters ??= new MpvPropertyRead<int>(this, "chapters", null);
+        private MpvPropertyRead<int>? _chapters;
 
         /// <summary>
         /// Number of MKV editions.
         /// </summary>
-        public MpvPropertyRead<int?> Editions => _editions ??= new MpvPropertyRead<int?>(this, "editions", null);
-        private MpvPropertyRead<int?>? _editions;
+        public MpvPropertyRead<int> Editions => _editions ??= new MpvPropertyRead<int>(this, "editions", null);
+        private MpvPropertyRead<int>? _editions;
 
         /// <summary>
         /// Number of editions. If there are no editions, this can be 0 or 1 (1 if there's a useless dummy edition).
         /// </summary>
-        public MpvPropertyRead<int?> EditionListCount => _editionListCount ??= new MpvPropertyRead<int?>(this, "edition-list/count", null);
-        private MpvPropertyRead<int?>? _editionListCount;
+        public MpvPropertyRead<int> EditionListCount => _editionListCount ??= new MpvPropertyRead<int>(this, "edition-list/count", null);
+        private MpvPropertyRead<int>? _editionListCount;
 
         /// <summary>
         /// Edition ID as integer. Use this to set the edition property. Currently, this is the same as the edition index.
         /// </summary>
-        public MpvPropertyIndex<int?, int> EditionListId => _editionListId ??= new MpvPropertyIndex<int?, int>(this, "edition-list/{0}/id", null);
-        private MpvPropertyIndex<int?, int>? _editionListId;
+        public MpvPropertyIndex<int> EditionListId => _editionListId ??= new MpvPropertyIndex<int>(this, "edition-list/{0}/id", null);
+        private MpvPropertyIndex<int>? _editionListId;
 
         /// <summary>
         /// True if this is the default edition, otherwise false.
         /// </summary>
-        public MpvPropertyIndexRead<bool?, string?, int> EditionListDefault => _editionListDefault ??= new MpvPropertyIndexRead<bool?, string?, int>(this, "edition-list/{0}/default", null, 
+        public MpvPropertyIndexClassRead<bool?, string, int> EditionListDefault => _editionListDefault ??= new MpvPropertyIndexClassRead<bool?, string, int>(this, "edition-list/{0}/default", null,
             x => x != null ? (x == "yes") : (bool?)null);
-        private MpvPropertyIndexRead<bool?, string?, int>? _editionListDefault;
+        private MpvPropertyIndexClassRead<bool?, string, int>? _editionListDefault;
 
         /// <summary>
         /// Edition title as stored in the file. Not always available.
         /// </summary>
-        public MpvPropertyIndex<string, int> EditionListTitle => _editionListTitle ??= new MpvPropertyIndex<string, int>(this, "edition-list/{0}/title", string.Empty);
-        private MpvPropertyIndex<string, int>? _editionListTitle;
+        public MpvPropertyIndexReadClass<string> EditionListTitle => _editionListTitle ??= new MpvPropertyIndexReadClass<string>(this, "edition-list/{0}/title", string.Empty);
+        private MpvPropertyIndexReadClass<string>? _editionListTitle;
 
 
 
