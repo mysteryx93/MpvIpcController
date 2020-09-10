@@ -7,7 +7,7 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read-only MPV property. This is an exact copy of MpvPropertyRead but with "where TApi : class".
     /// </summary>
     /// <typeparam name="TResult">The return type of the property.</typeparam>
-    public class MpvPropertyReadC<T> : MpvPropertyClassRead<T?, T>
+    public class MpvPropertyReadC<T> : MpvPropertyReadC<T?, T>
         where T : class
     {
         public MpvPropertyReadC(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
@@ -19,10 +19,10 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
-    public class MpvPropertyClassRead<TResult, TApi> : MpvPropertyC<TResult, TApi>
+    public class MpvPropertyReadC<TResult, TApi> : MpvPropertyC<TResult, TApi>
         where TApi : class
     {
-        public MpvPropertyClassRead(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyReadC(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null) : base(api, name, defaultValue, parser)
         { }
 
         /// <summary>

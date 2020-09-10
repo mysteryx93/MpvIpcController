@@ -21,42 +21,12 @@ namespace HanumanInstitute.MpvIpcController
             Api = api;
             PropertyName = name.CheckNotNullOrEmpty(nameof(name));
             DefaultValue = defaultValue;
-            Parser = parser ?? DefaultParser;
+            Parser = parser ?? MpvFormatters.ParseDefault<TResult, TApi?>;
         }
 
         /// <summary>
         /// Gets the API name of the property.
         /// </summary>
         public string PropertyName { get; private set; }
-
-        /// <summary>
-        /// The default parser to use when TApi and TResult are the same.
-        /// </summary>
-        protected static TResult DefaultParser(TApi? value)
-        {
-            if (typeof(TResult) == typeof(TApi))
-            {
-                return (TResult)Convert.ChangeType(value, typeof(TResult), CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                throw new ArgumentException("Parser must be specified if TResult and TApi are different.");
-            }
-        }
-
-        /// <summary>
-        /// The default formatter to use when TApi and TResult are the same.
-        /// </summary>
-        protected static TApi? DefaultFormatter(TResult value)
-        {
-            if (typeof(TResult) == typeof(TApi))
-            {
-                return (TApi)Convert.ChangeType(value, typeof(TApi), CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                throw new ArgumentException("Formatter must be specified if TResult and TApi are different.");
-            }
-        }
     }
 }

@@ -39,7 +39,7 @@ namespace HanumanInstitute.MpvIpcController
     {
         public MpvPropertyIndexWriteC(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
         {
-            Formatter = formatter ?? DefaultFormatter;
+            Formatter = formatter ?? MpvFormatters.FormatDefault<TResult, TApi?>;
         }
 
         protected PropertyFormatter<TResult, TApi?> Formatter { get; private set; }

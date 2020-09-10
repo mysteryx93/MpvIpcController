@@ -1152,73 +1152,40 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Metadata key/value pairs.
         /// </summary>
-        public MpvPropertyReadC<IDictionary<string, string>> Metadata => _metadata ??= new MpvPropertyReadC<IDictionary<string, string>>(this, "metadata");
-        private MpvPropertyReadC<IDictionary<string, string>>? _metadata;
-
-        /// <summary>
-        /// Value of metadata entry 'key'.
-        /// </summary>
-        public MpvPropertyIndexReadC<string, string> MetadataByKey => _metadataByKey ??= new MpvPropertyIndexReadC<string, string>(this, "metadata/by-key/{0}");
-        private MpvPropertyIndexReadC<string, string>? _metadataByKey;
-
-        /// <summary>
-        /// Number of metadata entries.
-        /// </summary>
-        public MpvPropertyRead<int> MetadataListCount => _metadataListCount ??= new MpvPropertyRead<int>(this, "metadata/list/count");
-        private MpvPropertyRead<int>? _metadataListCount;
-
-        /// <summary>
-        /// Key name of the Nth metadata entry. (The first entry is 0).
-        /// </summary>
-        public MpvPropertyIndexReadC<string> MetadataListKey => _metadataListKey ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/key");
-        private MpvPropertyIndexReadC<string>? _metadataListKey;
-
-        /// <summary>
-        /// Value of the Nth metadata entry.
-        /// </summary>
-        public MpvPropertyIndexReadC<string> MetadataListValue => _metadataListValue ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/value");
-        private MpvPropertyIndexReadC<string>? _metadataListValue;
+        public MpvMetadataProperties Metadata => _metadata ??= new MpvMetadataProperties(this, "metadata");
+        private MpvMetadataProperties? _metadata;
 
         /// <summary>
         /// Like metadata, but includes only fields listed in the --display-tags option. This is the same set of tags that is printed to the terminal.
         /// </summary>
-        public MpvPropertyIndexReadC<IDictionary<string, string>> FilteredMetadata => _filteredMetadata ??= new MpvPropertyIndexReadC<IDictionary<string, string>>(this, "filtered-metadata");
-        private MpvPropertyIndexReadC<IDictionary<string, string>>? _filteredMetadata;
+        public MpvMetadataProperties FilteredMetadata => _filteredMetadata ??= new MpvMetadataProperties(this, "filtered-metadata");
+        private MpvMetadataProperties? _filteredMetadata;
 
         /// <summary>
         /// Metadata of current chapter. Works similar to metadata property. It also allows the same access methods (using sub-properties).
         /// Per-chapter metadata is very rare.Usually, only the chapter name (title) is set.
         /// For accessing other information, like chapter start, see the chapter-list property.
         /// </summary>
-        public MpvPropertyIndexReadC<IDictionary<string, string>> ChapterMetadata => _chapterMetadata ??= new MpvPropertyIndexReadC<IDictionary<string, string>>(this, "chapter-metadata");
-        private MpvPropertyIndexReadC<IDictionary<string, string>>? _chapterMetadata;
+        public MpvMetadataProperties ChapterMetadata => _chapterMetadata ??= new MpvMetadataProperties(this, "chapter-metadata");
+        private MpvMetadataProperties? _chapterMetadata;
 
         /// <summary>
-        /// Value of chapter metadata entry 'key'.
+        /// Metadata added by video filters. Accessed by the filter label, which, if not explicitly specified using the @filter-label: syntax, will be <filter-name>NN.
         /// </summary>
-        public MpvPropertyIndexReadC<string, string> ChapterMetadataByKey => _chapterMetadataByKey ??= new MpvPropertyIndexReadC<string, string>(this, "metadata/by-key/{0}");
-        private MpvPropertyIndexReadC<string, string>? _chapterMetadataByKey;
+        /// <param name="filterLabel">The label of the filter.</param>
+        public MpvMetadataProperties VideoFilterMetadata(string filterLabel) => new MpvMetadataProperties(this, $"vf-metadata/{filterLabel}");
 
         /// <summary>
-        /// Number of chapter metadata entries.
+        /// Metadata added by audio filters. Accessed by the filter label, which, if not explicitly specified using the @filter-label: syntax, will be <filter-name>NN.
         /// </summary>
-        public MpvPropertyRead<int> ChapterMetadataListCount => _chapterMetadataListCount ??= new MpvPropertyRead<int>(this, "metadata/list/count");
-        private MpvPropertyRead<int>? _chapterMetadataListCount;
+        /// <param name="filterLabel">The label of the filter.</param>
+        public MpvMetadataProperties AudioFilterMetadata(string filterLabel) => new MpvMetadataProperties(this, $"af-metadata/{filterLabel}");
 
         /// <summary>
-        /// Key name of the Nth chapter metadata entry. (The first entry is 0).
+        /// Return yes if no file is loaded, but the player is staying around because of the --idle option.
         /// </summary>
-        public MpvPropertyIndexReadC<string> ChapterMetadataListKey => _chapterMetadataListKey ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/key");
-        private MpvPropertyIndexReadC<string>? _chapterMetadataListKey;
-
-        /// <summary>
-        /// Value of the Nth chapter metadata entry.
-        /// </summary>
-        public MpvPropertyIndexReadC<string> ChapterMetadataListValue => _chapterMetadataListValue ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/value");
-        private MpvPropertyIndexReadC<string>? _chapterMetadataListValue;
-
-
-
+        public MpvPropertyRead<bool> IdleActive => _idleActive ??= new MpvPropertyRead<bool>(this, "idle-active");
+        private MpvPropertyRead<bool>? _idleActive;
 
 
         private bool _disposedValue;

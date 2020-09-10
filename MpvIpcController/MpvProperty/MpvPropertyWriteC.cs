@@ -7,7 +7,7 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read/write MPV property. This is an exact copy of MpvPropertyWrite but with "where TApi : class".
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyWriteC<T> : MpvPropertyClassWrite<T?, T>
+    public class MpvPropertyWriteC<T> : MpvPropertyWriteC<T?, T>
         where T : class
     {
         public MpvPropertyWriteC(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
@@ -20,12 +20,12 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
-    public class MpvPropertyClassWrite<TResult, TApi> : MpvPropertyClassRead<TResult, TApi>
+    public class MpvPropertyWriteC<TResult, TApi> : MpvPropertyReadC<TResult, TApi>
         where TApi : class
     {
-        public MpvPropertyClassWrite(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyWriteC(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
         {
-            Formatter = formatter ?? DefaultFormatter;
+            Formatter = formatter ?? MpvFormatters.FormatDefault<TResult, TApi?>;
         }
 
         protected PropertyFormatter<TResult, TApi?> Formatter { get; private set; }
