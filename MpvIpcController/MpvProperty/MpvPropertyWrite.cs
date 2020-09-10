@@ -7,10 +7,9 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read/write MPV property.
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyWrite<T> : MpvPropertyWrite<T?, T>
-        where T : struct
+    public class MpvPropertyWrite<T> : MpvPropertyWrite<T, T>
     {
-        public MpvPropertyWrite(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
+        public MpvPropertyWrite(MpvApi api, string name) : base(api, name)
         {
         }
     }
@@ -21,14 +20,13 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
     public class MpvPropertyWrite<TResult, TApi> : MpvPropertyRead<TResult, TApi>
-        where TApi : struct
     {
-        public MpvPropertyWrite(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyWrite(MpvApi api, string name, PropertyParser<TResult, TApi>? parser = null, PropertyFormatter<TResult, TApi>? formatter = null) : base(api, name, parser)
         {
-            Formatter = formatter ?? MpvFormatters.FormatDefault<TResult, TApi?>;
+            Formatter = formatter ?? MpvFormatters.FormatDefault<TResult, TApi>;
         }
 
-        protected PropertyFormatter<TResult, TApi?> Formatter { get; private set; }
+        protected PropertyFormatter<TResult, TApi> Formatter { get; private set; }
 
         /// <summary>
         /// Set the given property or option to the given value.

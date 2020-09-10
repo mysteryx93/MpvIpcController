@@ -29,14 +29,14 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        Task<T?> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd) where T : struct;
+        Task<T> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd);
         /// <summary>
         /// Sends specified message to MPV and returns a class of specified type.
         /// </summary>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        Task<T?> SendMessageClassAsync<T>(MpvCommandOptions? options, params object?[] cmd) where T : class;
+        //Task<T?> SendMessageClassAsync<T>(MpvCommandOptions? options, params object?[] cmd) where T : class;
         /// <summary>
         /// Sends specified message to MPV.
         /// </summary>

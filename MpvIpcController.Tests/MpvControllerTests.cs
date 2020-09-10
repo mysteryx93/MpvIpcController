@@ -57,7 +57,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Controller.SendMessageAsync<int>(null, CommandName);
+            var requestTask = app.Controller.SendMessageAsync<int?>(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseWithInt());
             var response = await requestTask;
 
@@ -70,7 +70,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var requestTask = app.Controller.SendMessageClassAsync<IList<string>>(null, CommandName);
+            var requestTask = app.Controller.SendMessageAsync<IList<string>>(null, CommandName);
             await app.WriteServerMessageAsync(GetResponseWithArray());
             var response = await requestTask;
 

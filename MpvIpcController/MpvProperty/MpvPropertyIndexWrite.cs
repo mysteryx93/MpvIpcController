@@ -4,26 +4,13 @@ using System.Threading.Tasks;
 namespace HanumanInstitute.MpvIpcController
 {
     /// <summary>
-    /// Represents a read/write MPV indexed property with an integer index.
-    /// </summary>
-    /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyIndexWrite<T> : MpvPropertyIndexWrite<T, T, int>
-        where T : struct
-    {
-        public MpvPropertyIndexWrite(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
-        {
-        }
-    }
-
-    /// <summary>
     /// Represents a read/write MPV indexed property.
     /// </summary>
-    /// <typeparam name="T">The return type of the property.</typeparam>
     /// <typeparam name="TIndex">The indexer data type.</typeparam>
-    public class MpvPropertyIndexWrite<T, TIndex> : MpvPropertyIndexWrite<T, T, TIndex>
-        where T : struct
+    /// <typeparam name="T">The return type of the property.</typeparam>
+    public class MpvPropertyIndexWrite<TIndex, T> : MpvPropertyIndexWrite<TIndex, T, T>
     {
-        public MpvPropertyIndexWrite(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
+        public MpvPropertyIndexWrite(MpvApi api, string name) : base(api, name)
         {
         }
     }
@@ -31,18 +18,17 @@ namespace HanumanInstitute.MpvIpcController
     /// <summary>
     /// Represents a read/write MPV indexed property.
     /// </summary>
+    /// <typeparam name="TIndex">The indexer data type.</typeparam>
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
-    /// <typeparam name="TIndex">The indexer data type.</typeparam>
-    public class MpvPropertyIndexWrite<TResult, TApi, TIndex> : MpvPropertyIndexRead<TResult, TApi, TIndex>
-        where TApi : struct
+    public class MpvPropertyIndexWrite<TIndex, TResult, TApi> : MpvPropertyIndexRead<TIndex, TResult, TApi>
     {
-        public MpvPropertyIndexWrite(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyIndexWrite(MpvApi api, string name, PropertyParser<TResult, TApi>? parser = null, PropertyFormatter<TResult, TApi>? formatter = null) : base(api, name, parser)
         {
-            Formatter = formatter ?? MpvFormatters.FormatDefault<TResult, TApi?>;
+            Formatter = formatter ?? MpvFormatters.FormatDefault<TResult, TApi>;
         }
 
-        protected PropertyFormatter<TResult, TApi?> Formatter { get; private set; }
+        protected PropertyFormatter<TResult, TApi> Formatter { get; private set; }
 
         /// <summary>
         /// Set the given property or option to the given value.

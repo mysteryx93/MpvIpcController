@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
@@ -10,18 +9,15 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
     public abstract class MpvProperty<TResult, TApi>
-        where TApi : struct
     {
         protected MpvApi Api { get; private set; }
-        protected TApi? DefaultValue { get; private set; }
-        protected PropertyParser<TResult, TApi?> Parser { get; private set; }
+        protected PropertyParser<TResult, TApi> Parser { get; private set; }
 
-        public MpvProperty(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null)
+        public MpvProperty(MpvApi api, string name, PropertyParser<TResult, TApi>? parser = null)
         {
             Api = api;
             PropertyName = name.CheckNotNullOrEmpty(nameof(name));
-            DefaultValue = defaultValue;
-            Parser = parser ?? MpvFormatters.ParseDefault<TResult, TApi?>;
+            Parser = parser ?? MpvFormatters.ParseDefault<TResult, TApi>;
         }
 
         /// <summary>

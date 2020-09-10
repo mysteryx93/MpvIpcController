@@ -7,10 +7,9 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read-only MPV property.
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyRead<T> : MpvPropertyRead<T?, T>
-        where T : struct
+    public class MpvPropertyRead<T> : MpvPropertyRead<T, T>
     {
-        public MpvPropertyRead(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
+        public MpvPropertyRead(MpvApi api, string name) : base(api, name)
         {
         }
     }
@@ -21,9 +20,8 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
     public class MpvPropertyRead<TResult, TApi> : MpvProperty<TResult, TApi>
-        where TApi : struct
     {
-        public MpvPropertyRead(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyRead(MpvApi api, string name, PropertyParser<TResult, TApi>? parser = null) : base(api, name, parser)
         { }
 
         /// <summary>
@@ -31,7 +29,7 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public async Task<TResult> GetAsync()
         {
-            var result = await Api.GetPropertyAsync<TApi>(PropertyName).ConfigureAwait(false) ?? DefaultValue;
+            var result = await Api.GetPropertyAsync<TApi>(PropertyName).ConfigureAwait(false);
             return Parser(result);
         }
     }

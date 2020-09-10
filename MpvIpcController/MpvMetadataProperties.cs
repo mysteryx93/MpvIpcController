@@ -21,31 +21,31 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Metadata key/value pairs.
         /// </summary>
-        public MpvPropertyReadC<IDictionary<string, string>> Metadata => _metadata ??= new MpvPropertyReadC<IDictionary<string, string>>(_api, _prefix);
-        private MpvPropertyReadC<IDictionary<string, string>>? _metadata;
+        public MpvPropertyRead<IDictionary<string, string>?> Metadata => _metadata ??= new MpvPropertyRead<IDictionary<string, string>?>(_api, _prefix);
+        private MpvPropertyRead<IDictionary<string, string>?>? _metadata;
 
         /// <summary>
         /// Value of metadata entry 'key'.
         /// </summary>
-        public MpvPropertyIndexReadC<string, string> MetadataByKey => _metadataByKey ??= new MpvPropertyIndexReadC<string, string>(_api, _prefix + "/by-key/{0}");
-        private MpvPropertyIndexReadC<string, string>? _metadataByKey;
+        public MpvPropertyIndexRead<string, string?> MetadataByKey => _metadataByKey ??= new MpvPropertyIndexRead<string, string?>(_api, _prefix + "/by-key/{0}");
+        private MpvPropertyIndexRead<string, string?>? _metadataByKey;
 
         /// <summary>
         /// Number of metadata entries.
         /// </summary>
-        public MpvPropertyRead<int> MetadataListCount => _metadataListCount ??= new MpvPropertyRead<int>(_api, _prefix + "/list/count");
-        private MpvPropertyRead<int>? _metadataListCount;
+        public MpvPropertyRead<int?> MetadataListCount => _metadataListCount ??= new MpvPropertyRead<int?>(_api, _prefix + "/list/count");
+        private MpvPropertyRead<int?>? _metadataListCount;
 
         /// <summary>
         /// Key name of the Nth metadata entry. (The first entry is 0).
         /// </summary>
-        public MpvPropertyIndexReadC<string> MetadataListKey => _metadataListKey ??= new MpvPropertyIndexReadC<string>(_api, _prefix + "/list/{0}/key");
-        private MpvPropertyIndexReadC<string>? _metadataListKey;
+        public MpvPropertyIndexRead<int, string?> MetadataListKey => _metadataListKey ??= new MpvPropertyIndexRead<int, string?>(_api, _prefix + "/list/{0}/key");
+        private MpvPropertyIndexRead<int, string?>? _metadataListKey;
 
         /// <summary>
         /// Value of the Nth metadata entry.
         /// </summary>
-        public MpvPropertyIndexReadC<string> MetadataListValue => _metadataListValue ??= new MpvPropertyIndexReadC<string>(_api, _prefix + "/list/{0}/value");
-        private MpvPropertyIndexReadC<string>? _metadataListValue;
+        public MpvPropertyIndexRead<int, string?> MetadataListValue => _metadataListValue ??= new MpvPropertyIndexRead<int, string?>(_api, _prefix + "/list/{0}/value");
+        private MpvPropertyIndexRead<int, string?>? _metadataListValue;
     }
 }

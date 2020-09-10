@@ -5,9 +5,9 @@ namespace HanumanInstitute.MpvIpcController
     /// <summary>
     /// Represents a boolean read-only API property.
     /// </summary>
-    public class MpvPropertyBoolRead : MpvPropertyReadC<bool?, string>
+    public class MpvPropertyBoolRead : MpvPropertyRead<bool?, string?>
     {
-        public MpvPropertyBoolRead(MpvApi api, string name, string? defaultValue = null) : base(api, name, defaultValue, MpvFormatters.ParseBool)
+        public MpvPropertyBoolRead(MpvApi api, string name) : base(api, name, MpvFormatters.ParseBool)
         {
         }
     }
@@ -15,9 +15,9 @@ namespace HanumanInstitute.MpvIpcController
     /// <summary>
     /// Represents a boolean read-write API property.
     /// </summary>
-    public class MpvPropertyBoolWrite : MpvPropertyWriteC<bool?, string>
+    public class MpvPropertyBoolWrite : MpvPropertyWrite<bool?, string?>
     {
-        public MpvPropertyBoolWrite(MpvApi api, string name, string? defaultValue = null) : base(api, name, defaultValue, MpvFormatters.ParseBool, MpvFormatters.FormatBool)
+        public MpvPropertyBoolWrite(MpvApi api, string name) : base(api, name, MpvFormatters.ParseBool, MpvFormatters.FormatBool)
         {
         }
     }
@@ -26,9 +26,9 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a boolean indexed read-only API property.
     /// </summary>
     /// <typeparam name="TIndex">The indexer data type.</typeparam>
-    public class MpvPropertyIndexBoolRead<TIndex> : MpvPropertyIndexReadC<bool?, string, TIndex>
+    public class MpvPropertyIndexBoolRead<TIndex> : MpvPropertyIndexRead<TIndex, bool?, string?>
     {
-        public MpvPropertyIndexBoolRead(MpvApi api, string name, string? defaultValue = null) : base(api, name, defaultValue, MpvFormatters.ParseBool)
+        public MpvPropertyIndexBoolRead(MpvApi api, string name) : base(api, name, MpvFormatters.ParseBool)
         {
         }
     }
@@ -37,9 +37,9 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a boolean indexed read-write API property.
     /// </summary>
     /// <typeparam name="TIndex">The indexer data type.</typeparam>
-    public class MpvPropertyIndexBoolWrite<TIndex> : MpvPropertyIndexWriteC<bool?, string, TIndex>
+    public class MpvPropertyIndexBoolWrite<TIndex> : MpvPropertyIndexWrite<TIndex, bool?, string?>
     {
-        public MpvPropertyIndexBoolWrite(MpvApi api, string name, string? defaultValue = null) : base(api, name, defaultValue, MpvFormatters.ParseBool)
+        public MpvPropertyIndexBoolWrite(MpvApi api, string name) : base(api, name, MpvFormatters.ParseBool)
         {
         }
     }

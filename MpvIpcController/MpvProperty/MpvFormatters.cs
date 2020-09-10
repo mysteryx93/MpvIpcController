@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using HanumanInstitute.Validators;
 
@@ -9,11 +10,12 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// The default parser to use when TApi and TResult are the same.
         /// </summary>
+        [return: MaybeNull]
         public static TResult ParseDefault<TResult, TApi>(TApi value)
         {
             if (typeof(TResult) == typeof(TApi))
             {
-                return (TResult)Convert.ChangeType(value, typeof(TResult), CultureInfo.InvariantCulture);
+                return (TResult)(object?)value;
             }
             else
             {
@@ -24,11 +26,12 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// The default formatter to use when TApi and TResult are the same.
         /// </summary>
+        [return: MaybeNull]
         public static TApi FormatDefault<TResult, TApi>(TResult value)
         {
             if (typeof(TResult) == typeof(TApi))
             {
-                return (TApi)Convert.ChangeType(value, typeof(TApi), CultureInfo.InvariantCulture);
+                return (TApi)(object?)value;
             }
             else
             {

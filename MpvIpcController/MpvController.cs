@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
@@ -119,24 +120,10 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<T?> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd)
-            where T : struct
+        public async Task<T> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd)
         {
             var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
-            return ParseDataStruct<T>(result);
-        }
-
-        /// <summary>
-        /// Sends specified message to MPV and returns a class of specified type.
-        /// </summary>
-        /// <param name="options">Additional command options.</param>
-        /// <param name="cmd">The command values to send.</param>
-        /// <returns>The server's response to the command.</returns>
-        public async Task<T?> SendMessageClassAsync<T>(MpvCommandOptions? options, params object?[] cmd)
-            where T : class
-        {
-            var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
-            return ParseDataClass<T>(result);
+            return ParseData<T>(result)!;
         }
 
         /// <summary>
@@ -325,21 +312,41 @@ namespace HanumanInstitute.MpvIpcController
             }
         }
 
-        private static T ParseData<T>(string data) => (T)Convert.ChangeType(data, typeof(T), CultureInfo.InvariantCulture);
-
-        private static T? ParseDataStruct<T>(string? data)
-            where T : struct
+        [return: MaybeNull]
+        private static T ParseData<T>(string? data)
         {
-            return data != null ? ParseData<T>(data) : default;
+            if (data == null) { return default; }
+
+            if (typeof(T) == typeof(string))
+            {
+                return (T)(object)data;
+            }
+            if (typeof(T).IsValueType)
+            {
+                var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+                return (T)Convert.ChangeType(data, type, CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                return JsonSerializer.Deserialize<T>(data);
+            }
         }
 
-        private static T? ParseDataClass<T>(string? data)
-            where T : class
-        {
-            return typeof(T) == typeof(string) ?
-                (data != null ? ParseData<T>(data) : default) :
-                JsonSerializer.Deserialize<T>(data);
-        }
+        //private static T ParseData<T>(string data) => (T)Convert.ChangeType(data, typeof(T), CultureInfo.InvariantCulture);
+
+        //private static T? ParseDataStruct<T>(string? data)
+        //    where T : struct
+        //{
+        //    return data != null ? ParseData<T>(data) : default;
+        //}
+
+        //private static T? ParseDataClass<T>(string? data)
+        //    where T : class
+        //{
+        //    return typeof(T) == typeof(string) ?
+        //        (data != null ? ParseData<T>(data) : default) :
+        //        JsonSerializer.Deserialize<T>(data);
+        //}
 
 
 
