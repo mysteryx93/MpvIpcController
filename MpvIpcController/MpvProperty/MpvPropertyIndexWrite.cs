@@ -10,7 +10,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvPropertyIndexWrite<T> : MpvPropertyIndexWrite<T, T, int>
         where T : struct
     {
-        public MpvPropertyIndexWrite(MpvApi api, string name, T defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyIndexWrite(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
         {
         }
     }
@@ -23,7 +23,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvPropertyIndexWrite<T, TIndex> : MpvPropertyIndexWrite<T, T, TIndex>
         where T : struct
     {
-        public MpvPropertyIndexWrite(MpvApi api, string name, T defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyIndexWrite(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
         {
         }
     }
@@ -37,7 +37,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvPropertyIndexWrite<TResult, TApi, TIndex> : MpvPropertyIndexRead<TResult, TApi, TIndex>
         where TApi : struct
     {
-        public MpvPropertyIndexWrite(MpvApi api, string name, TApi defaultValue, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyIndexWrite(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null, PropertyFormatter<TResult, TApi?>? formatter = null) : base(api, name, defaultValue, parser)
         {
             Formatter = formatter ?? DefaultFormatter;
         }

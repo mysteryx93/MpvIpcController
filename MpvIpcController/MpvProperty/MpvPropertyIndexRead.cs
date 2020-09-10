@@ -11,7 +11,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvPropertyIndex<T> : MpvPropertyIndexRead<T, T, int>
         where T : struct
     {
-        public MpvPropertyIndex(MpvApi api, string name, T? defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyIndex(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
         {
         }
     }
@@ -23,7 +23,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvPropertyIndex<T, TIndex> : MpvPropertyIndexRead<T, T, TIndex>
         where T : struct
     {
-        public MpvPropertyIndex(MpvApi api, string name, T? defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyIndex(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
         {
         }
     }
@@ -37,7 +37,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvPropertyIndexRead<TResult, TApi, TIndex> : MpvProperty<TResult, TApi>
         where TApi : struct
     {
-        public MpvPropertyIndexRead(MpvApi api, string name, TApi? defaultValue, PropertyParser<TResult, TApi?>? parser = null) : base(api, name, defaultValue, parser)
+        public MpvPropertyIndexRead(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null) : base(api, name, defaultValue, parser)
         {
         }
 

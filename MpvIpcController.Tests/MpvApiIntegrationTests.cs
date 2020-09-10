@@ -55,5 +55,23 @@ namespace HanumanInstitute.MpvIpcController.Tests
 
             await app.LogAndQuitAsync(_output);
         }
+
+        [Fact]
+        public async Task Metadata_ValidFile_ReturnsDictionary()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                await app.Api.LoadFileAsync(app.SampleClip, options: new MpvCommandOptions().NoOsd());
+                var result = await app.Api.Metadata.GetAsync();
+
+                Assert.NotEmpty(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
     }
 }

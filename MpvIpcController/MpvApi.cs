@@ -1012,19 +1012,19 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Duration of the current file in seconds. If the duration is unknown, the property is unavailable. Note that the file duration is not always exactly known, so this is an estimate.
         /// </summary>
-        public MpvPropertyRead<double> Duration => _duration ??= new MpvPropertyRead<double>(this, "duration", null);
+        public MpvPropertyRead<double> Duration => _duration ??= new MpvPropertyRead<double>(this, "duration");
         private MpvPropertyRead<double>? _duration;
 
         /// <summary>
         /// Last A/V synchronization difference. Unavailable if audio or video is disabled.
         /// </summary>
-        public MpvPropertyRead<float> AVSync => _avSync ??= new MpvPropertyRead<float>(this, "avsync", null);
+        public MpvPropertyRead<float> AVSync => _avSync ??= new MpvPropertyRead<float>(this, "avsync");
         private MpvPropertyRead<float>? _avSync;
 
         /// <summary>
         /// Total A-V sync correction done. Unavailable if audio or video is disabled.
         /// </summary>
-        public MpvPropertyRead<float> TotalAVSyncChange => _totalAVSyncChange ??= new MpvPropertyRead<float>(this, "total-avsync-change", null);
+        public MpvPropertyRead<float> TotalAVSyncChange => _totalAVSyncChange ??= new MpvPropertyRead<float>(this, "total-avsync-change");
         private MpvPropertyRead<float>? _totalAVSyncChange;
 
         /// <summary>
@@ -1048,7 +1048,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// For how many vsyncs a frame is displayed on average. This is available if display-sync is active only. For 30 FPS video on a 60 Hz screen, this will be 2. This is the moving average of what actually has been scheduled, so 24 FPS on 60 Hz will never remain exactly on 2.5, but jitter depending on the last frame displayed.
         /// </summary>
-        public MpvPropertyRead<float> VSyncRatio => _vSyncRatio ??= new MpvPropertyRead<float>(this, "vsync-ratio", null);
+        public MpvPropertyRead<float> VSyncRatio => _vSyncRatio ??= new MpvPropertyRead<float>(this, "vsync-ratio");
         private MpvPropertyRead<float>? _vSyncRatio;
 
         /// <summary>
@@ -1060,94 +1060,164 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Position in current file (0-100). The advantage over using this instead of calculating it out of other properties is that it properly falls back to estimating the playback position from the byte position, if the file duration is not known.
         /// </summary>
-        public MpvPropertyWrite<float> PercentPos => _percentPos ??= new MpvPropertyWrite<float>(this, "percent-pos", null);
+        public MpvPropertyWrite<float> PercentPos => _percentPos ??= new MpvPropertyWrite<float>(this, "percent-pos");
         private MpvPropertyWrite<float>? _percentPos;
 
         /// <summary>
         /// Position in current file in seconds.
         /// </summary>
-        public MpvPropertyWrite<double> TimePos => _timePos ??= new MpvPropertyWrite<double>(this, "time-pos", null);
+        public MpvPropertyWrite<double> TimePos => _timePos ??= new MpvPropertyWrite<double>(this, "time-pos");
         private MpvPropertyWrite<double>? _timePos;
 
         /// <summary>
         /// Remaining length of the file in seconds. Note that the file duration is not always exactly known, so this is an estimate.
         /// </summary>
-        public MpvPropertyRead<double> TimeRemaining => _timeRemaining ??= new MpvPropertyRead<double>(this, "time-remaining", null);
+        public MpvPropertyRead<double> TimeRemaining => _timeRemaining ??= new MpvPropertyRead<double>(this, "time-remaining");
         private MpvPropertyRead<double>? _timeRemaining;
 
         /// <summary>
         /// Current audio playback position in current file in seconds. Unlike time-pos, this updates more often than once per frame. For audio-only files, it is mostly equivalent to time-pos, while for video-only files this property is not available.
         /// </summary>
-        public MpvPropertyRead<double> AudioPts => _audioPts ??= new MpvPropertyRead<double>(this, "audio-pts", null);
+        public MpvPropertyRead<double> AudioPts => _audioPts ??= new MpvPropertyRead<double>(this, "audio-pts");
         private MpvPropertyRead<double>? _audioPts;
 
         /// <summary>
         /// TimeRemaining scaled by the current speed.
         /// </summary>
-        public MpvPropertyRead<double> PlaytimeRemaining => _playtimeRemaining ??= new MpvPropertyRead<double>(this, "playtime-remaining", null);
+        public MpvPropertyRead<double> PlaytimeRemaining => _playtimeRemaining ??= new MpvPropertyRead<double>(this, "playtime-remaining");
         private MpvPropertyRead<double>? _playtimeRemaining;
 
         /// <summary>
         /// Position in current file in seconds. Unlike time-pos, the time is clamped to the range of the file. (Inaccurate file durations etc. could make it go out of range. Useful on attempts to seek outside of the file, as the seek target time is considered the current position during seeking.)
         /// </summary>
-        public MpvPropertyWrite<double> PlaybackTime => _playbackTime ??= new MpvPropertyWrite<double>(this, "playback-time", null);
+        public MpvPropertyWrite<double> PlaybackTime => _playbackTime ??= new MpvPropertyWrite<double>(this, "playback-time");
         private MpvPropertyWrite<double>? _playbackTime;
 
         /// <summary>
         /// Current chapter number. The number of the first chapter is 0.
         /// </summary>
-        public MpvPropertyWrite<int> Chapter => _chapter ??= new MpvPropertyWrite<int>(this, "chapter ", null);
+        public MpvPropertyWrite<int> Chapter => _chapter ??= new MpvPropertyWrite<int>(this, "chapter ");
         private MpvPropertyWrite<int>? _chapter;
 
         /// <summary>
         /// Current MKV edition number. Setting this property to a different value will restart playback. The number of the first edition is 0.
         /// Before mpv 0.31.0, this showed the actual edition selected at runtime, if you didn't set the option or property manually. With mpv 0.31.0 and later, this strictly returns the user-set option or property value, and the current-edition property was added to return the runtime selected edition (this matters with --edition=auto, the default).
         /// </summary>
-        public MpvPropertyWrite<int> Edition => _edition ??= new MpvPropertyWrite<int>(this, "edition", null);
+        public MpvPropertyWrite<int> Edition => _edition ??= new MpvPropertyWrite<int>(this, "edition");
         private MpvPropertyWrite<int>? _edition;
 
         /// <summary>
         /// Currently selected edition. This property is unavailable if no file is loaded, or the file has no editions. (Matroska files make a difference between having no editions and a single edition, which will be reflected by the property, although in practice it does not matter.)
         /// </summary>
-        public MpvPropertyRead<int> CurrentEdition => _currentEdition ??= new MpvPropertyRead<int>(this, "current-edition", null);
+        public MpvPropertyRead<int> CurrentEdition => _currentEdition ??= new MpvPropertyRead<int>(this, "current-edition");
         private MpvPropertyRead<int>? _currentEdition;
 
         /// <summary>
         /// Number of chapters.
         /// </summary>
-        public MpvPropertyRead<int> Chapters => _chapters ??= new MpvPropertyRead<int>(this, "chapters", null);
+        public MpvPropertyRead<int> Chapters => _chapters ??= new MpvPropertyRead<int>(this, "chapters");
         private MpvPropertyRead<int>? _chapters;
 
         /// <summary>
         /// Number of MKV editions.
         /// </summary>
-        public MpvPropertyRead<int> Editions => _editions ??= new MpvPropertyRead<int>(this, "editions", null);
+        public MpvPropertyRead<int> Editions => _editions ??= new MpvPropertyRead<int>(this, "editions");
         private MpvPropertyRead<int>? _editions;
 
         /// <summary>
         /// Number of editions. If there are no editions, this can be 0 or 1 (1 if there's a useless dummy edition).
         /// </summary>
-        public MpvPropertyRead<int> EditionListCount => _editionListCount ??= new MpvPropertyRead<int>(this, "edition-list/count", null);
+        public MpvPropertyRead<int> EditionListCount => _editionListCount ??= new MpvPropertyRead<int>(this, "edition-list/count");
         private MpvPropertyRead<int>? _editionListCount;
 
         /// <summary>
         /// Edition ID as integer. Use this to set the edition property. Currently, this is the same as the edition index.
         /// </summary>
-        public MpvPropertyIndex<int> EditionListId => _editionListId ??= new MpvPropertyIndex<int>(this, "edition-list/{0}/id", null);
+        public MpvPropertyIndex<int> EditionListId => _editionListId ??= new MpvPropertyIndex<int>(this, "edition-list/{0}/id");
         private MpvPropertyIndex<int>? _editionListId;
 
         /// <summary>
         /// True if this is the default edition, otherwise false.
         /// </summary>
-        public MpvPropertyIndexClassRead<bool?, string, int> EditionListDefault => _editionListDefault ??= new MpvPropertyIndexClassRead<bool?, string, int>(this, "edition-list/{0}/default", null,
+        public MpvPropertyIndexReadC<bool?, string, int> EditionListDefault => _editionListDefault ??= new MpvPropertyIndexReadC<bool?, string, int>(this, "edition-list/{0}/default", null,
             x => x != null ? (x == "yes") : (bool?)null);
-        private MpvPropertyIndexClassRead<bool?, string, int>? _editionListDefault;
+        private MpvPropertyIndexReadC<bool?, string, int>? _editionListDefault;
 
         /// <summary>
         /// Edition title as stored in the file. Not always available.
         /// </summary>
         public MpvPropertyIndexReadC<string> EditionListTitle => _editionListTitle ??= new MpvPropertyIndexReadC<string>(this, "edition-list/{0}/title", string.Empty);
         private MpvPropertyIndexReadC<string>? _editionListTitle;
+
+        /// <summary>
+        /// Metadata key/value pairs.
+        /// </summary>
+        public MpvPropertyReadC<IDictionary<string, string>> Metadata => _metadata ??= new MpvPropertyReadC<IDictionary<string, string>>(this, "metadata");
+        private MpvPropertyReadC<IDictionary<string, string>>? _metadata;
+
+        /// <summary>
+        /// Value of metadata entry 'key'.
+        /// </summary>
+        public MpvPropertyIndexReadC<string, string> MetadataByKey => _metadataByKey ??= new MpvPropertyIndexReadC<string, string>(this, "metadata/by-key/{0}");
+        private MpvPropertyIndexReadC<string, string>? _metadataByKey;
+
+        /// <summary>
+        /// Number of metadata entries.
+        /// </summary>
+        public MpvPropertyRead<int> MetadataListCount => _metadataListCount ??= new MpvPropertyRead<int>(this, "metadata/list/count");
+        private MpvPropertyRead<int>? _metadataListCount;
+
+        /// <summary>
+        /// Key name of the Nth metadata entry. (The first entry is 0).
+        /// </summary>
+        public MpvPropertyIndexReadC<string> MetadataListKey => _metadataListKey ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/key");
+        private MpvPropertyIndexReadC<string>? _metadataListKey;
+
+        /// <summary>
+        /// Value of the Nth metadata entry.
+        /// </summary>
+        public MpvPropertyIndexReadC<string> MetadataListValue => _metadataListValue ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/value");
+        private MpvPropertyIndexReadC<string>? _metadataListValue;
+
+        /// <summary>
+        /// Like metadata, but includes only fields listed in the --display-tags option. This is the same set of tags that is printed to the terminal.
+        /// </summary>
+        public MpvPropertyIndexReadC<IDictionary<string, string>> FilteredMetadata => _filteredMetadata ??= new MpvPropertyIndexReadC<IDictionary<string, string>>(this, "filtered-metadata");
+        private MpvPropertyIndexReadC<IDictionary<string, string>>? _filteredMetadata;
+
+        /// <summary>
+        /// Metadata of current chapter. Works similar to metadata property. It also allows the same access methods (using sub-properties).
+        /// Per-chapter metadata is very rare.Usually, only the chapter name (title) is set.
+        /// For accessing other information, like chapter start, see the chapter-list property.
+        /// </summary>
+        public MpvPropertyIndexReadC<IDictionary<string, string>> ChapterMetadata => _chapterMetadata ??= new MpvPropertyIndexReadC<IDictionary<string, string>>(this, "chapter-metadata");
+        private MpvPropertyIndexReadC<IDictionary<string, string>>? _chapterMetadata;
+
+        /// <summary>
+        /// Value of chapter metadata entry 'key'.
+        /// </summary>
+        public MpvPropertyIndexReadC<string, string> ChapterMetadataByKey => _chapterMetadataByKey ??= new MpvPropertyIndexReadC<string, string>(this, "metadata/by-key/{0}");
+        private MpvPropertyIndexReadC<string, string>? _chapterMetadataByKey;
+
+        /// <summary>
+        /// Number of chapter metadata entries.
+        /// </summary>
+        public MpvPropertyRead<int> ChapterMetadataListCount => _chapterMetadataListCount ??= new MpvPropertyRead<int>(this, "metadata/list/count");
+        private MpvPropertyRead<int>? _chapterMetadataListCount;
+
+        /// <summary>
+        /// Key name of the Nth chapter metadata entry. (The first entry is 0).
+        /// </summary>
+        public MpvPropertyIndexReadC<string> ChapterMetadataListKey => _chapterMetadataListKey ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/key");
+        private MpvPropertyIndexReadC<string>? _chapterMetadataListKey;
+
+        /// <summary>
+        /// Value of the Nth chapter metadata entry.
+        /// </summary>
+        public MpvPropertyIndexReadC<string> ChapterMetadataListValue => _chapterMetadataListValue ??= new MpvPropertyIndexReadC<string>(this, "metadata/list/{0}/value");
+        private MpvPropertyIndexReadC<string>? _chapterMetadataListValue;
+
+
 
 
 

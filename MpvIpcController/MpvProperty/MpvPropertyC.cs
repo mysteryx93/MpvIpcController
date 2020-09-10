@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Globalization;
 using HanumanInstitute.Validators;
 
@@ -37,7 +39,7 @@ namespace HanumanInstitute.MpvIpcController
         {
             if (typeof(TResult) == typeof(TApi))
             {
-                return (TResult)Convert.ChangeType(value, typeof(TResult), CultureInfo.InvariantCulture);
+                return (TResult)(object)value!;
             }
             else
             {
@@ -52,7 +54,7 @@ namespace HanumanInstitute.MpvIpcController
         {
             if (typeof(TResult) == typeof(TApi))
             {
-                return (TApi)Convert.ChangeType(value, typeof(TApi), CultureInfo.InvariantCulture);
+                return (TApi)(object)value!;
             }
             else
             {
