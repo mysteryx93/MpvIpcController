@@ -8,10 +8,10 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read-only MPV indexed property with an integer index. This is an exact copy of MpvPropertyIndexRead but with "where TApi : class".
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyIndexReadClass<T> : MpvPropertyIndexClassRead<T, T, int>
+    public class MpvPropertyIndexReadC<T> : MpvPropertyIndexClassRead<T, T, int>
         where T : class
     {
-        public MpvPropertyIndexReadClass(MpvApi api, string name, T? defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyIndexReadC(MpvApi api, string name, T? defaultValue) : base(api, name, defaultValue)
         {
         }
     }
@@ -35,7 +35,7 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
     /// <typeparam name="TIndex">The indexer data type.</typeparam>
-    public class MpvPropertyIndexClassRead<TResult, TApi, TIndex> : MpvPropertyClass<TResult, TApi>
+    public class MpvPropertyIndexClassRead<TResult, TApi, TIndex> : MpvPropertyC<TResult, TApi>
         where TApi : class
     {
         public MpvPropertyIndexClassRead(MpvApi api, string name, TApi? defaultValue, PropertyParser<TResult, TApi?>? parser = null) : base(api, name, defaultValue, parser)

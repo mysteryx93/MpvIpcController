@@ -9,14 +9,14 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>
-    public abstract class MpvPropertyClass<TResult, TApi>
+    public abstract class MpvPropertyC<TResult, TApi>
         where TApi : class
     {
         protected MpvApi Api { get; private set; }
         protected TApi? DefaultValue { get; private set; }
         protected PropertyParser<TResult, TApi?> Parser { get; private set; }
 
-        public MpvPropertyClass(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null)
+        public MpvPropertyC(MpvApi api, string name, TApi? defaultValue = null, PropertyParser<TResult, TApi?>? parser = null)
         {
             Api = api;
             PropertyName = name.CheckNotNullOrEmpty(nameof(name));

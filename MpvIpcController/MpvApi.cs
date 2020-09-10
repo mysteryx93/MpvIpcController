@@ -940,14 +940,14 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Currently played file, with path stripped. If this is an URL, try to undo percent encoding as well. (The result is not necessarily correct, but looks better for display purposes. Use the path property to get an unmodified filename.)
         /// </summary>
-        public MpvPropertyReadClass<string> FileName => _fileName ??= new MpvPropertyReadClass<string>(this, "filename", string.Empty);
-        private MpvPropertyReadClass<string>? _fileName;
+        public MpvPropertyReadC<string> FileName => _fileName ??= new MpvPropertyReadC<string>(this, "filename", string.Empty);
+        private MpvPropertyReadC<string>? _fileName;
 
         /// <summary>
         /// Like the filename property, but if the text contains a ., strip all text after the last .. Usually this removes the file extension.
         /// </summary>
-        public MpvPropertyReadClass<string> FileNameNoExt => _fileNameNoExt ??= new MpvPropertyReadClass<string>(this, "filename/no-ext", string.Empty);
-        private MpvPropertyReadClass<string>? _fileNameNoExt;
+        public MpvPropertyReadC<string> FileNameNoExt => _fileNameNoExt ??= new MpvPropertyReadC<string>(this, "filename/no-ext", string.Empty);
+        private MpvPropertyReadC<string>? _fileNameNoExt;
 
         /// <summary>
         /// Length in bytes of the source file/stream. (This is the same as ${stream-end}. For segmented/multi-part files, this will return the size of the main or manifest file, whatever it is.)
@@ -970,32 +970,32 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Full path of the currently played file. Usually this is exactly the same string you pass on the mpv command line or the loadfile command, even if it's a relative path. If you expect an absolute path, you will have to determine it yourself, for example by using the working-directory property.
         /// </summary>
-        public MpvPropertyReadClass<string> Path => _path ??= new MpvPropertyReadClass<string>(this, "path", string.Empty);
-        private MpvPropertyReadClass<string>? _path;
+        public MpvPropertyReadC<string> Path => _path ??= new MpvPropertyReadC<string>(this, "path", string.Empty);
+        private MpvPropertyReadC<string>? _path;
 
         /// <summary>
         /// The full path to the currently played media. This is different only from path in special cases. In particular, if --ytdl=yes is used, and the URL is detected by youtube-dl, then the script will set this property to the actual media URL. This property should be set only during the on_load or on_load_fail hooks, otherwise it will have no effect (or may do something implementation defined in the future). The property is reset if playback of the current media ends.
         /// </summary>
-        public MpvPropertyReadClass<string> StreamOpenFileName => _streamOpenFileName ??= new MpvPropertyReadClass<string>(this, "stream-open-filename", string.Empty);
-        private MpvPropertyReadClass<string>? _streamOpenFileName;
+        public MpvPropertyReadC<string> StreamOpenFileName => _streamOpenFileName ??= new MpvPropertyReadC<string>(this, "stream-open-filename", string.Empty);
+        private MpvPropertyReadC<string>? _streamOpenFileName;
 
         /// <summary>
         /// If the currently played file has a title tag, use that. Otherwise, return the filename property.
         /// </summary>
-        public MpvPropertyReadClass<string> MediaTitle => _mediaTitle ??= new MpvPropertyReadClass<string>(this, "media-title", string.Empty);
-        private MpvPropertyReadClass<string>? _mediaTitle;
+        public MpvPropertyReadC<string> MediaTitle => _mediaTitle ??= new MpvPropertyReadC<string>(this, "media-title", string.Empty);
+        private MpvPropertyReadC<string>? _mediaTitle;
 
         /// <summary>
         /// Symbolic name of the file format. In some cases, this is a comma-separated list of format names, e.g. mp4 is mov,mp4,m4a,3gp,3g2,mj2 (the list may grow in the future for any format).
         /// </summary>
-        public MpvPropertyReadClass<string> FileFormat => _fileFormat ??= new MpvPropertyReadClass<string>(this, "file-format", string.Empty);
-        private MpvPropertyReadClass<string>? _fileFormat;
+        public MpvPropertyReadC<string> FileFormat => _fileFormat ??= new MpvPropertyReadC<string>(this, "file-format", string.Empty);
+        private MpvPropertyReadC<string>? _fileFormat;
 
         /// <summary>
         /// Filename (full path) of the stream layer filename. (This is probably useless and is almost never different from path.)
         /// </summary>
-        public MpvPropertyReadClass<string> StreamPath => _streamPath ??= new MpvPropertyReadClass<string>(this, "stream-path", string.Empty);
-        private MpvPropertyReadClass<string>? _streamPath;
+        public MpvPropertyReadC<string> StreamPath => _streamPath ??= new MpvPropertyReadC<string>(this, "stream-path", string.Empty);
+        private MpvPropertyReadC<string>? _streamPath;
 
         /// <summary>
         /// Raw byte position in source stream. Technically, this returns the position of the most recent packet passed to a decoder.
@@ -1146,8 +1146,8 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Edition title as stored in the file. Not always available.
         /// </summary>
-        public MpvPropertyIndexReadClass<string> EditionListTitle => _editionListTitle ??= new MpvPropertyIndexReadClass<string>(this, "edition-list/{0}/title", string.Empty);
-        private MpvPropertyIndexReadClass<string>? _editionListTitle;
+        public MpvPropertyIndexReadC<string> EditionListTitle => _editionListTitle ??= new MpvPropertyIndexReadC<string>(this, "edition-list/{0}/title", string.Empty);
+        private MpvPropertyIndexReadC<string>? _editionListTitle;
 
 
 

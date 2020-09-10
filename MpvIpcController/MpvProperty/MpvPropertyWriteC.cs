@@ -7,10 +7,10 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read/write MPV property. This is an exact copy of MpvPropertyWrite but with "where TApi : class".
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyWriteClass<T> : MpvPropertyClassWrite<T?, T>
+    public class MpvPropertyWriteC<T> : MpvPropertyClassWrite<T?, T>
         where T : class
     {
-        public MpvPropertyWriteClass(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
+        public MpvPropertyWriteC(MpvApi api, string name, T? defaultValue = null) : base(api, name, defaultValue)
         {
         }
     }

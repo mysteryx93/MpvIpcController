@@ -7,10 +7,10 @@ namespace HanumanInstitute.MpvIpcController
     /// Represents a read/write MPV indexed property with an integer index. This is an exact copy of MpvPropertyIndexWrite but with "where TApi : class".
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyIndexWriteClass<T> : MpvPropertyIndexClassWrite<T, T, int>
+    public class MpvPropertyIndexWriteC<T> : MpvPropertyIndexClassWrite<T, T, int>
         where T : class
     {
-        public MpvPropertyIndexWriteClass(MpvApi api, string name, T? defaultValue) : base(api, name, defaultValue)
+        public MpvPropertyIndexWriteC(MpvApi api, string name, T? defaultValue) : base(api, name, defaultValue)
         {
         }
     }
