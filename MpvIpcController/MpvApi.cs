@@ -909,8 +909,8 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Return whether --video-sync=display is actually active.
         /// </summary>
-        public MpvPropertyBoolRead DisplaySyncActive => _displaySyncActive ??= new MpvPropertyBoolRead(this, "display-sync-active");
-        private MpvPropertyBoolRead? _displaySyncActive;
+        public MpvPropertyRead<bool?> DisplaySyncActive => _displaySyncActive ??= new MpvPropertyRead<bool?>(this, "display-sync-active");
+        private MpvPropertyRead<bool?>? _displaySyncActive;
 
         /// <summary>
         /// Currently played file, with path stripped. If this is an URL, try to undo percent encoding as well. (The result is not necessarily correct, but looks better for display purposes. Use the path property to get an unmodified filename.)
@@ -1114,8 +1114,8 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// True if this is the default edition, otherwise false.
         /// </summary>
-        public MpvPropertyIndexBoolRead<int?> EditionListDefault => _editionListDefault ??= new MpvPropertyIndexBoolRead<int?>(this, "edition-list/{0}/default");
-        private MpvPropertyIndexBoolRead<int?>? _editionListDefault;
+        public MpvPropertyIndexRead<int, bool?> EditionListDefault => _editionListDefault ??= new MpvPropertyIndexRead<int, bool?>(this, "edition-list/{0}/default");
+        private MpvPropertyIndexRead<int, bool?>? _editionListDefault;
 
         /// <summary>
         /// Edition title as stored in the file. Not always available.
@@ -1160,6 +1160,15 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvPropertyRead<bool?> IdleActive => _idleActive ??= new MpvPropertyRead<bool?>(this, "idle-active");
         private MpvPropertyRead<bool?>? _idleActive;
+
+        /// <summary>
+        /// Return yes if the playback core is paused, otherwise no. This can be different pause in special situations, such as when the player pauses itself due to low network cache.
+        /// This also returns yes if playback is restarting or if nothing is playing at all.In other words, it's only no if there's actually video playing. (Behavior since mpv 0.7.0.)
+        /// </summary>
+        public MpvPropertyRead<bool?> CoreIdle => _coreIdle ??= new MpvPropertyRead<bool?>(this, "core-idle");
+        private MpvPropertyRead<bool?>? _coreIdle;
+
+
 
 
         private bool _disposedValue;

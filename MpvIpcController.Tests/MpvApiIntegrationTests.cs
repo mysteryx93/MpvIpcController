@@ -57,13 +57,30 @@ namespace HanumanInstitute.MpvIpcController.Tests
         }
 
         [Fact]
+        public async Task IdleActive_Idle_ReturnsTrue()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                var result = await app.Api.IdleActive.GetAsync();
+
+                Assert.True(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Fact]
         public async Task Metadata_ValidFile_ReturnsDictionary()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
             try
             {
-                await app.Api.LoadFileAsync(app.SampleClip, options: new MpvCommandOptions().NoOsd());
+                await app.Api.LoadFileAsync(app.SampleClip);
                 var result = await app.Api.Metadata.Metadata.GetAsync();
 
                 Assert.NotEmpty(result);
