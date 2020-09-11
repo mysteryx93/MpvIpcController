@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace HanumanInstitute.MpvIpcController
 {
     /// <summary>
-    /// Represents a read-only MPV property.
+    /// Represents a read-only MPV property. T must be a nullable type.
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
     public class MpvPropertyRead<T> : MpvPropertyRead<T, T>
@@ -15,7 +15,7 @@ namespace HanumanInstitute.MpvIpcController
     }
 
     /// <summary>
-    /// Represents a read-only MPV property.
+    /// Represents a read-only MPV property. TResult and TApi must be nullable types.
     /// </summary>
     /// <typeparam name="TResult">The return type of the property.</typeparam>
     /// <typeparam name="TApi">The API data type before parsing.</typeparam>

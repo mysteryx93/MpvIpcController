@@ -4,13 +4,20 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using HanumanInstitute.MpvIpcController.Models;
 using HanumanInstitute.Validators;
+
+// MPV JSON IPC protocol documentation
+// https://mpv.io/manual/stable/#json-ipc
+//
+// Based on v0.32
+//
+// Changelog to update for future versions available here
+// https://github.com/mpv-player/mpv/releases
+// https://github.com/mpv-player/mpv/blob/master/DOCS/client-api-changes.rst
 
 namespace HanumanInstitute.MpvIpcController
 {
-    // MPV JSON IPC protocol documentation
-    // https://mpv.io/manual/stable/#json-ipc
-
     /// <summary>
     /// Exposes MPV's API in a strongly-typed way.
     /// </summary>
@@ -1167,6 +1174,93 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvPropertyRead<bool?> CoreIdle => _coreIdle ??= new MpvPropertyRead<bool?>(this, "core-idle");
         private MpvPropertyRead<bool?>? _coreIdle;
+
+        /// <summary>
+        /// Current I/O read speed between the cache and the lower layer (like network). This gives the number bytes per seconds over a 1 second window.
+        /// </summary>
+        public MpvPropertyRead<long?> CacheSpeed => _cacheSpeed ??= new MpvPropertyRead<long?>(this, "cache-speed");
+        private MpvPropertyRead<long?>? _cacheSpeed;
+
+        /// <summary>
+        /// Approximate duration of video buffered in the demuxer, in seconds. The guess is very unreliable, and often the property will not be available at all, even if data is buffered
+        /// </summary>
+        public MpvPropertyRead<double?> DemuxerCacheDuration => _demuxerCacheDuration ??= new MpvPropertyRead<double?>(this, "demuxer-cache-duration");
+        private MpvPropertyRead<double?>? _demuxerCacheDuration;
+
+        /// <summary>
+        /// Approximate time of video buffered in the demuxer, in seconds. Same as demuxer-cache-duration but returns the last timestamp of buffered data in demuxer.
+        /// </summary>
+        public MpvPropertyRead<double?> DemuxerCacheTime => _demuxerCacheTime ??= new MpvPropertyRead<double?>(this, "demuxer-cache-time");
+        private MpvPropertyRead<double?>? _demuxerCacheTime;
+
+        /// <summary>
+        /// Returns yes if the demuxer is idle, which means the demuxer cache is filled to the requested amount, and is currently not reading more data.
+        /// </summary>
+        public MpvPropertyRead<bool?> DemuxerCacheIdle => _demuxerCacheIdle ??= new MpvPropertyRead<bool?>(this, "demuxer-cache-idle");
+        private MpvPropertyRead<bool?>? _demuxerCacheIdle;
+
+        /// <summary>
+        /// Various undocumented or half-documented things.
+        /// </summary>
+        public MpvPropertyRead<DemuxerCacheState?> DemuxerCacheState => _demuxerCacheState ??= new MpvPropertyRead<DemuxerCacheState?>(this, "demuxer-cache-state");
+        private MpvPropertyRead<DemuxerCacheState?>? _demuxerCacheState;
+
+        /// <summary>
+        /// Returns true if the stream demuxed via the main demuxer is most likely played via network. What constitutes "network" is not always clear, might be used for other types of untrusted streams, could be wrong in certain cases, and its definition might be changing. Also, external files (like separate audio files or streams) do not influence the value of this property (currently).
+        /// </summary>
+        public MpvPropertyRead<bool?> DemuxerViaNetwork => _demuxerViaNetwork ??= new MpvPropertyRead<bool?>(this, "demuxer-via-network");
+        private MpvPropertyRead<bool?>? _demuxerViaNetwork;
+
+        /// <summary>
+        /// Returns the start time reported by the demuxer in fractional seconds.
+        /// </summary>
+        public MpvPropertyRead<double?> DemuxerStartTime => _demuxerStartTime ??= new MpvPropertyRead<double?>(this, "demuxer-start-time");
+        private MpvPropertyRead<double?>? _demuxerStartTime;
+
+        /// <summary>
+        /// Returns True when playback is paused because of waiting for the cache.
+        /// </summary>
+        public MpvPropertyRead<bool?> PausedForCache => _pausedForCache ??= new MpvPropertyRead<bool?>(this, "paused-for-cache");
+        private MpvPropertyRead<bool?>? _pausedForCache;
+
+        /// <summary>
+        /// Returns the percentage (0-100) of the cache fill status until the player will unpause (related to paused-for-cache).
+        /// </summary>
+        public MpvPropertyRead<double?> CacheBufferingState => _cacheBufferingState ??= new MpvPropertyRead<double?>(this, "cache-buffering-state");
+        private MpvPropertyRead<double?>? _cacheBufferingState;
+
+        /// <summary>
+        /// Returns true if end of playback was reached, no otherwise. Note that this is usually interesting only if --keep-open is enabled, since otherwise the player will immediately play the next file (or exit or enter idle mode), and in these cases the eof-reached property will logically be cleared immediately after it's set.
+        /// </summary>
+        public MpvPropertyRead<bool?> EofReached => _eofReached ??= new MpvPropertyRead<bool?>(this, "eof-reached");
+        private MpvPropertyRead<bool?>? _eofReached;
+
+        /// <summary>
+        /// Returns True if the player is currently seeking, or otherwise trying to restart playback. (It's possible that it returns True while a file is loaded. This is because the same underlying code is used for seeking and resyncing.)
+        /// </summary>
+        public MpvPropertyRead<bool?> Seeking => _seeking ??= new MpvPropertyRead<bool?>(this, "seeking");
+        private MpvPropertyRead<bool?>? _seeking;
+
+        /// <summary>
+        /// Return yes if the audio mixer is active, no otherwise.
+        /// This option is relatively useless.Before mpv 0.18.1, it could be used to infer behavior of the volume property.
+        /// </summary>
+        public MpvPropertyRead<bool?> MixerActive => _mixerActive ??= new MpvPropertyRead<bool?>(this, "mixer-active");
+        private MpvPropertyRead<bool?>? _mixerActive;
+
+        /// <summary>
+        /// System volume. This property is available only if mpv audio output is currently active, and only if the underlying implementation supports volume control. What this option does depends on the API. For example, on ALSA this usually changes system-wide audio, while with PulseAudio this controls per-application volume.
+        /// </summary>
+        public MpvPropertyWrite<double?> AoVolume => _aoVolume ??= new MpvPropertyWrite<double?>(this, "ao-volume");
+        private MpvPropertyWrite<double?>? _aoVolume;
+
+        /// <summary>
+        /// Similar to AoVolume, but controls the mute state. May be unimplemented even if AoVolume works.
+        /// </summary>
+        public MpvPropertyWrite<double?> AoMute => _aoMute ??= new MpvPropertyWrite<double?>(this, "ao-mute");
+        private MpvPropertyWrite<double?>? _aoMute;
+
+
 
 
 

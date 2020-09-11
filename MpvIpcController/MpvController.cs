@@ -169,6 +169,7 @@ namespace HanumanInstitute.MpvIpcController
             };
             var jsonOptions = new JsonSerializerOptions()
             {
+                PropertyNamingPolicy = new MpvJsonNamingPolicy(),
                 IgnoreNullValues = true
             };
             var jsonString = System.Text.Json.JsonSerializer.Serialize(request, jsonOptions) + '\n';
@@ -328,7 +329,11 @@ namespace HanumanInstitute.MpvIpcController
             }
             else
             {
-                return JsonSerializer.Deserialize<T>(data);
+                var jsonOptions = new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = new MpvJsonNamingPolicy()
+                };
+                return JsonSerializer.Deserialize<T>(data, jsonOptions);
             }
         }
 

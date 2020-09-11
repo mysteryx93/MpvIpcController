@@ -90,5 +90,42 @@ namespace HanumanInstitute.MpvIpcController.Tests
                 await app.LogAndQuitAsync(_output);
             }
         }
+
+        [Fact]
+        public async Task DemuxerCacheTime_ValidFile_ReturnsValue()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                await app.Api.LoadFileAsync(app.SampleClip);
+                var result = await app.Api.DemuxerCacheTime.GetAsync();
+
+                Assert.NotNull(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Fact]
+        public async Task DemuxerCacheState_ValidFile_ReturnsParsedObject()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                await app.Api.LoadFileAsync(app.SampleClip);
+                var result = await app.Api.DemuxerCacheState.GetAsync();
+
+                Assert.NotNull(result);
+                Assert.NotEqual(0, result?.RawInputRate);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
     }
 }
