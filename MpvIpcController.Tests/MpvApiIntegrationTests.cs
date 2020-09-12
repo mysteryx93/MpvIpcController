@@ -127,5 +127,43 @@ namespace HanumanInstitute.MpvIpcController.Tests
                 await app.LogAndQuitAsync(_output);
             }
         }
+
+        [Fact]
+        public async Task VideoParamsRotate_ValidFile_ReturnsValue()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                await app.Api.LoadFileAsync(app.SampleClip);
+                await Task.Delay(50);
+                var result = await app.Api.VideoParams.Rotate.GetAsync();
+
+                Assert.NotNull(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Fact]
+        public async Task VideoFrame_ValidFile_ReturnsValue()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                await app.Api.LoadFileAsync(app.SampleClip);
+                await Task.Delay(100);
+                var result = await app.Api.VideoParams.SignalPeak.GetAsync();
+
+                Assert.NotNull(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
     }
 }

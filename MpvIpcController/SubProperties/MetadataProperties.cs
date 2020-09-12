@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {
     /// <summary>
     /// Exposes the Metata sub-properties.
     /// </summary>
-    public class MpvMetadataProperties
+    public class MetadataProperties
     {
         private readonly MpvApi _api;
         private readonly string _prefix;
 
-        public MpvMetadataProperties(MpvApi api, string propertyName)
+        public MetadataProperties(MpvApi api, string propertyName)
         {
             _api = api;
             _prefix = propertyName;
