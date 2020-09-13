@@ -1,4 +1,5 @@
 ﻿using System;
+using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {
@@ -48,6 +49,10 @@ namespace HanumanInstitute.MpvIpcController
         /// Happens on audio output or filter reconfig.
         /// </summary>
         public event EventHandler? AudioReconfig;
+        /// <summary>
+        /// Happens when an observed property is changed.
+        /// </summary>
+        public event EventHandler<PropertyChangedEventArgs>? PropertyChanged;
 
         /// <summary>
         /// Occurs when an event is received from MPV.
@@ -112,6 +117,16 @@ namespace HanumanInstitute.MpvIpcController
             else if (e.EventName == "audio-reconfig")
             {
                 AudioReconfig?.Invoke(this, new EventArgs());
+            }
+            else if (e.EventName == "property-change" && PropertyChanged != null)
+            {
+                var args = new PropertyChangedEventArgs()
+                {
+                    Id = e.Data["id"].Parse<int>() ?? 0,
+                    Data = e.Data["data"] ?? string.Empty,
+                    Name = e.Data["name"] ?? string.Empty
+                };
+                PropertyChanged?.Invoke(this, args);
             }
         }
     }
