@@ -121,7 +121,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<MpvResponse<T>?> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd)
+        public async Task<MpvResponse<T>?> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd)
         {
             var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
 
@@ -149,7 +149,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        public async Task<MpvResponse?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
+        public async Task<MpvResponse?> SendMessageAsync(ApiOptions? options, params object?[] cmd)
         {
             cmd.CheckNotNullOrEmpty(nameof(cmd));
 
@@ -302,7 +302,7 @@ namespace HanumanInstitute.MpvIpcController
                 {
                     if (item.Name != "event")
                     {
-                        response.Data.Add(item.Name, item.Value.GetRawText());
+                        response.Data.Add(item.Name, item.Value.GetString());
                     }
                 }
                 return response;

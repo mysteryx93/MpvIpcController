@@ -41,7 +41,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            await app.Api.LoadFileAsync(app.SampleClip, options: new MpvCommandOptions() { NoOsd = true });
+            await app.Api.LoadFileAsync(app.SampleClip, options: new ApiOptions() { NoOsd = true });
 
             await app.LogAndQuitAsync(_output);
         }
@@ -51,7 +51,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            await app.Controller.SendMessageAsync(options: new MpvCommandOptions() { WaitForResponse = false }, "invalidcommand");
+            await app.Controller.SendMessageAsync(options: new ApiOptions() { WaitForResponse = false }, "invalidcommand");
 
             await app.LogAndQuitAsync(_output);
         }

@@ -7,7 +7,7 @@ namespace HanumanInstitute.MpvIpcController
     /// <summary>
     /// Contains additional options for sending API commands.
     /// </summary>
-    public class MpvCommandOptions
+    public class ApiOptions
     {
         /// <summary>
         /// Gets or sets whether to wait for server response when sending the command.

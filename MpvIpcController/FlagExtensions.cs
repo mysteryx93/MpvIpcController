@@ -8,6 +8,25 @@ namespace HanumanInstitute.MpvIpcController
     internal static class FlagExtensions
     {
         /// <summary>
+        /// Returns the flag represented by specified MPV-formatted value..
+        /// </summary>
+        /// <typeparam name="T">The enumeration type.</typeparam>
+        /// <param name="value">The value to parse.</param>
+        /// <returns>The typed enumeration value.</returns>
+        public static T? ParseMpvFlag<T>(string? value)
+            where T : struct, Enum
+        {
+            foreach (T item in Enum.GetValues(typeof(T)))
+            {
+                if (FormatMpvFlag(item) == value)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Returns a flag name in MPV format, adding '-' between words. "EachFrame" becomes "each-frame".
         /// </summary>
         /// <param name="flag">The flag value to format.</param>

@@ -29,8 +29,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            var received = new List<MpvEvent>();
-            app.Controller.EventReceived += (s, e) => received.Add(e.Event);
+            var received = new List<string>();
+            app.Controller.EventReceived += (s, e) => received.Add(e.EventName);
             await app.Controller.SendMessageAsync(null, "loadfile", app.SampleClip);
             await Task.Delay(10);
 

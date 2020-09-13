@@ -28,10 +28,10 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            IDictionary<string, object?>? data = null;
+            IDictionary<string, string?>? data = null;
             app.Controller.EventReceived += (s, e) =>
             {
-                data = e.Event.Data;
+                data = e.Data;
             };
             await app.WriteServerMessageAsync(EventMessage);
             await Task.Delay(50);

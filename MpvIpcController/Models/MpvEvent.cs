@@ -9,6 +9,6 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvEvent
     {
         public string Event { get; set; } = string.Empty;
-        public IDictionary<string, object?> Data { get; } = new Dictionary<string, object?>();
+        public IDictionary<string, string?> Data { get; } = new Dictionary<string, string?>();
     }
 }

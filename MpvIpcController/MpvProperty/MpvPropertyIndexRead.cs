@@ -35,7 +35,7 @@ namespace HanumanInstitute.MpvIpcController
         /// Watches a property for changes. If the given property is changed, then an event 'property-change' will be generated.
         /// </summary>
         /// <param name="observeId">An ID that will be passed to the generated events as parameter 'id'.</param>
-        public Task ObserveAsync(int observeId, TIndex index, MpvCommandOptions? options = null) =>
+        public Task ObserveAsync(int observeId, TIndex index, ApiOptions? options = null) =>
             Api.ObservePropertyAsync(observeId, GetPropertyIndexName(index), options);
     }
 

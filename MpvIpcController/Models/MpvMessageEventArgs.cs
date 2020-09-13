@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {
@@ -9,9 +11,13 @@ namespace HanumanInstitute.MpvIpcController
     {
         public MpvMessageEventArgs(MpvEvent obj)
         {
-            Event = obj;
+            obj.CheckNotNull(nameof(obj));
+
+            EventName = obj.Event;
+            Data = obj.Data;
         }
 
-        public MpvEvent Event { get; set; }
+        public string EventName { get; set; } = string.Empty;
+        public IDictionary<string, string?> Data { get; } = new Dictionary<string, string?>();
     }
 }

@@ -17,25 +17,25 @@ namespace HanumanInstitute.MpvIpcController
         /// Set the given property or option to the given value.
         /// </summary>
         /// <param name="value">The value to set.</param>
-        public Task SetAsync(T value, MpvCommandOptions? options = null) => Api.SetPropertyAsync(PropertyName, value, options);
+        public Task SetAsync(T value, ApiOptions? options = null) => Api.SetPropertyAsync(PropertyName, value, options);
 
         /// <summary>
         /// Add the given value to the property or option. On overflow or underflow, clamp the property to the maximum. If <value> is omitted, assume 1.
         /// </summary>
         /// <param name="value">The value to add.</param>
-        public Task AddAsync(T value, MpvCommandOptions? options = null) => Api.AddAsync(PropertyName, value, options);
+        public Task AddAsync(T value, ApiOptions? options = null) => Api.AddAsync(PropertyName, value, options);
 
         /// <summary>
         /// Similar to add, but multiplies the property or option with the numeric value.
         /// </summary>
         /// <param name="value">The multiplication factor.</param>
-        public Task MultiplyAsync(T value, MpvCommandOptions? options = null) => Api.MultiplyAsync(PropertyName, value, options);
+        public Task MultiplyAsync(T value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, value, options);
 
         /// <summary>
         /// Cycles the given property or option. The second argument can be up or down to set the cycle direction. On overflow, set the property back to the minimum, on underflow set it to the maximum.
         /// </summary>
         /// <param name="direction">The cycling direction. By default, Up.</param>
-        public Task CycleAsync(CycleDirection direction = CycleDirection.Up, MpvCommandOptions? options = null) => Api.CycleAsync(PropertyName, direction, options);
+        public Task CycleAsync(CycleDirection direction = CycleDirection.Up, ApiOptions? options = null) => Api.CycleAsync(PropertyName, direction, options);
 
     }
 
