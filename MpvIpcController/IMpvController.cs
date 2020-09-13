@@ -24,25 +24,18 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         StringBuilder? Log { get; }
         /// <summary>
-        /// Sends specified message to MPV and returns a nullable value of specified value type.
+        /// Sends specified message to MPV and returns a value of specified type.
         /// </summary>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        Task<T> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd);
+        Task<MpvResponse<T>?> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd);
         /// <summary>
-        /// Sends specified message to MPV and returns a class of specified type.
+        /// Sends specified message to MPV and returns the response as string.
         /// </summary>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        //Task<T?> SendMessageClassAsync<T>(MpvCommandOptions? options, params object?[] cmd) where T : class;
-        /// <summary>
-        /// Sends specified message to MPV.
-        /// </summary>
-        /// <param name="options">Additional command options.</param>
-        /// <param name="cmd">The command values to send.</param>
-        /// <returns>The server's response to the command.</returns>
-        Task<string?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd);
+        Task<MpvResponse?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd);
     }
 }

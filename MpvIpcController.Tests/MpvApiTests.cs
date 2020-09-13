@@ -20,7 +20,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            await app.Api.RequestLogMessagesAsync(LogLevel.Fatal, new MpvCommandOptions().DoNotWait());
+            await app.Api.RequestLogMessagesAsync(LogLevel.Fatal, new MpvCommandOptions() { WaitForResponse = false });
 
             Assert.Contains("fatal", app.ServerLog.ToString(), StringComparison.InvariantCulture);
         }
@@ -30,7 +30,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = TestSetup.Create();
 
-            var act = app!.Api.RequestLogMessagesAsync((LogLevel)9999, new MpvCommandOptions().DoNotWait());
+            var act = app!.Api.RequestLogMessagesAsync((LogLevel)9999, new MpvCommandOptions() { WaitForResponse = false });
 
             await Assert.ThrowsAsync<ArgumentException>(() => act);
         }

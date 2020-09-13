@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HanumanInstitute.MpvIpcController.Models
+namespace HanumanInstitute.MpvIpcController
 {
     /// <summary>
     /// Model to deserialize demuxer-cache-state property.

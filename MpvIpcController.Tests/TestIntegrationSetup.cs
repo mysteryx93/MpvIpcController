@@ -37,7 +37,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task LogAndQuitAsync(ITestOutputHelper? output)
         {
             output?.WriteLine(Controller?.Log?.ToString());
-            await Api.QuitAsync(options: new MpvCommandOptions().DoNotWait());
+            await Api.QuitAsync(options: new MpvCommandOptions() { WaitForResponse = false });
         }
 
 

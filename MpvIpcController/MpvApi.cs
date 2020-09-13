@@ -34,41 +34,57 @@ namespace HanumanInstitute.MpvIpcController
         public IMpvController Controller => _mpv;
 
         /// <summary>
+        /// Sends specified message to MPV and returns a value of specified type.
+        /// </summary>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command values to send.</param>
+        /// <returns>The server's response to the command.</returns>
+        public Task<MpvResponse<T>?> Run<T>(MpvCommandOptions? options, params object?[] cmd) => _mpv.SendMessageAsync<T>(options, cmd);
+
+        /// <summary>
+        /// Sends specified message to MPV and returns the response as string.
+        /// </summary>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command values to send.</param>
+        /// <returns>The server's response to the command.</returns>
+        public Task<MpvResponse?> Run(MpvCommandOptions? options, params object?[] cmd) => _mpv.SendMessageAsync(options, cmd);
+
+        /// <summary>
         /// Returns the name of the client as string. This is the string ipc-N with N being an integer number.
         /// </summary>
-        public async Task<string> GetClientNameAsync()
+        public async Task<MpvResponse<string?>?> GetClientNameAsync(MpvCommandOptions? options = null)
         {
-            return await _mpv.SendMessageAsync(null, "client_name").ConfigureAwait(false) ?? string.Empty;
+            return await _mpv.SendMessageAsync(options, "client_name").ConfigureAwait(false);
         }
 
         /// <summary>
         /// Returns the current mpv internal time in microseconds as a number. This is basically the system time, with an arbitrary offset.
         /// </summary>
-        public async Task<int> GetClientTimeAsync()
+        public async Task<MpvResponse<int?>?> GetClientTimeAsync(MpvCommandOptions? options = null)
         {
-            return await _mpv.SendMessageAsync<int>(null, "get_time_us").ConfigureAwait(false);
+            return await _mpv.SendMessageAsync<int?>(options, "get_time_us").ConfigureAwait(false);
         }
 
         /// <summary>
         /// Returns the value of the given property as a nullable value type.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
-        public async Task<T> GetPropertyAsync<T>(string propertyName)
+        public async Task<MpvResponse<T>?> GetPropertyAsync<T>(string propertyName, MpvCommandOptions? options = null)
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
-            return await _mpv.SendMessageAsync<T>(null, "get_property", propertyName).ConfigureAwait(false);
+            return await _mpv.SendMessageAsync<T>(options, "get_property", propertyName).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Returns the value of the given property. The resulting data will always be a string.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
-        public async Task<string> GetPropertyStringAsync(string propertyName)
+        public async Task<MpvResponse<string?>?> GetPropertyStringAsync(string propertyName, MpvCommandOptions? options = null)
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
-            return await _mpv.SendMessageAsync(null, "get_property_string", propertyName).ConfigureAwait(false) ?? string.Empty;
+            return await _mpv.SendMessageAsync(options, "get_property_string", propertyName).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -155,9 +171,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Returns the client API version the C API of the remote mpv instance provides.
         /// </summary>
-        public async Task<int?> GetVersionAsync(MpvCommandOptions? options = null)
+        public async Task<MpvResponse<int?>?> GetVersionAsync(MpvCommandOptions? options = null)
         {
-            return await _mpv.SendMessageAsync<int>(options, "get_version").ConfigureAwait(false);
+            return await _mpv.SendMessageAsync<int?>(options, "get_version").ConfigureAwait(false);
         }
 
         /// <summary>
@@ -402,6 +418,41 @@ namespace HanumanInstitute.MpvIpcController
             command.CheckNotNullOrEmpty(nameof(command));
 
             await _mpv.SendMessageAsync(options, "run", "/bin/sh", "-c", command).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Similar to run, but gives more control about process execution to the caller, and does does not detach the process.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="args">Array of strings with the command as first argument, and subsequent command line arguments following. This is just like the run command argument list.
+        /// The first array entry is either an absolute path to the executable, or a filename with no path components, in which case the PATH environment variable.On Unix, this is equivalent to posix_spawnp and execvp behavior.</param>
+        /// <param name="playbackOnly">Whether the process should be killed when playback terminates (optional, default: True). If enabled, stopping playback will automatically kill the process, and you can't start it outside of playback.</param>
+        /// <param name="captureSize">Maximum number of stdout plus stderr bytes that can be captured (optional, default: 64MB). If the number of bytes exceeds this, capturing is stopped. The limit is per captured stream.</param>
+        /// <param name="captureStdOut">Capture all data the process outputs to stdout and return it once the process ends (optional, default: false).</param>
+        /// <param name="captureStdErr">Capture all data the process outputs to stderr and return it once the process ends (optional, default: false).</param>
+        /// <returns>Process data of type SubProcessResponse.</returns>
+        public async Task SubProcessAsync(string command, IEnumerable<string>? args = null, bool? playbackOnly = null, int? captureSize = null, bool? captureStdOut = null, bool? captureStdErr = null, MpvCommandOptions? options = null)
+        {
+            command.CheckNotNullOrEmpty(nameof(command));
+
+            var data = new SubProcessRequest()
+            {
+                // Name = "subprocess",
+                PlaybackOnly = playbackOnly,
+                CaptureSize = captureSize,
+                CaptureStdOut = captureStdOut,
+                CaptureStdErr = captureStdErr,
+            };
+            data.Args.Add(command);
+            if (args?.Any() == true)
+            {
+                foreach (var item in args)
+                {
+                    data.Args.Add(item);
+                }
+            }
+
+            await _mpv.SendMessageAsync<SubProcessRequest>(options, data).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -661,7 +712,7 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         /// <param name="operation">Decides what happens to the filter.</param>
         /// <param name="value">The value to apply with the operation.</param>
-        public async Task AudioFilterAsync(FilterOperation operation, string value = "", MpvCommandOptions? options = null)
+        public async Task ChangeAudioFilterAsync(FilterOperation operation, string value = "", MpvCommandOptions? options = null)
         {
             operation.CheckEnumValid(nameof(operation));
 
@@ -673,7 +724,7 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         /// <param name="operation">Decides what happens to the filter.</param>
         /// <param name="value">The value to apply with the operation.</param>
-        public async Task VideoFilterAsync(FilterOperation operation, string value = "", MpvCommandOptions? options = null)
+        public async Task ChangeVideoFilterAsync(FilterOperation operation, string value = "", MpvCommandOptions? options = null)
         {
             operation.CheckEnumValid(nameof(operation));
 
@@ -743,23 +794,44 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
-        /// Adds/updates/removes an OSD overlay.
+        /// Adds or updates an OSD overlay of ASS format.
         /// (Although this sounds similar to overlay-add, osd-overlay is for text overlays, while overlay-add is for bitmaps.Maybe overlay-add will be merged into osd-overlay to remove this oddity.)
         /// If the libmpv client is destroyed, all overlays associated with it are also deleted. In particular, connecting via --input-ipc-server, adding an overlay, and disconnecting will remove the overlay immediately again.
         /// </summary>
+        /// <param name="text">String defining the overlay contents.</param>
         /// <param name="id">Arbitrary integer that identifies the overlay. Multiple overlays can be added by calling this command with different id parameters. Calling this command with the same id replaces the previously set overlay.
         /// There is a separate namespace for each libmpv client (i.e. IPC connection, script), so IDs can be made up and assigned by the API user without conflicting with other API users.</param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        //public async Task TextOverlayAdd(int id = 0, string format = "", MpvCommandOptions? options = null)
-        //{
-        //    await _mpv.SendMessageAsync(options, "osd-overlay", id).ConfigureAwait(false);
-        //}
+        /// <param name="playResX">Specify the value of ASS PlayResX.</param>
+        /// <param name="playResY">Specify the value of ASS PlayResY.</param>
+        /// <param name="zOrder">The Z order of the overlay.</param>
+        public async Task TextOverlayAdd(string text, int id = 0, int? playResX = null, int? playResY = null, int? zOrder = null, MpvCommandOptions? options = null)
+        {
+            var data = new OverlayRequest()
+            {
+                Id = id,
+                Format = "ass-events",
+                Data = text,
+                ResX = playResX,
+                ResY = playResY,
+                Z = zOrder
+            };
+            await _mpv.SendMessageAsync(options, data).ConfigureAwait(false);
+        }
 
-        //public async Task TextOverlayRemove(int id = 0, MpvCommandOptions? options = null)
-        //{
-        //    await _mpv.SendMessageAsync(options, "osd-overlay", id).ConfigureAwait(false);
-        //}
+        /// <summary>
+        /// Removes an OSD overlay.
+        /// </summary>
+        /// <param name="id">Arbitrary integer that identifies the overlay.</param>
+        public async Task TextOverlayRemove(int id = 0, MpvCommandOptions? options = null)
+        {
+            var data = new OverlayRequest()
+            {
+                Id = id,
+                Format = "none"
+            };
+            var args = new object?[] { "osd-overlay", data };
+            await _mpv.SendMessageAsync(options, args).ConfigureAwait(false);
+        }
 
 
         /// <summary>

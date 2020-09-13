@@ -49,7 +49,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
             await app.WriteServerMessageAsync(GetResponseSimple());
             var response = await requestTask;
 
-            Assert.Null(response);
+            Assert.NotNull(response);
+            Assert.Null(response?.Data);
         }
 
         [Fact]
@@ -61,8 +62,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
             await app.WriteServerMessageAsync(GetResponseWithInt());
             var response = await requestTask;
 
-            Assert.IsType<int>(response);
-            Assert.True(response.HasValue);
+            Assert.IsType<int>(response?.Data);
+            Assert.True(response?.HasData);
         }
 
         [Fact]
@@ -74,8 +75,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
             await app.WriteServerMessageAsync(GetResponseWithArray());
             var response = await requestTask;
 
-            Assert.IsNotType<string>(response);
-            Assert.IsAssignableFrom<IEnumerable>(response);
+            Assert.IsNotType<string>(response?.Data);
+            Assert.IsAssignableFrom<IEnumerable>(response?.Data);
         }
 
         [Fact]

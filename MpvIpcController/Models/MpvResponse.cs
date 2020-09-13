@@ -1,14 +1,33 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HanumanInstitute.MpvIpcController
 {
     /// <summary>
-    /// Represents a request to be sent to MPV.
+    /// Represents a response received from MPV, holding Data as raw string.
     /// </summary>
-    public class MpvResponse
+    public class MpvResponse : MpvResponse<string?>
+    {
+    }
+
+    /// <summary>
+    /// Represents a response received from MPV.
+    /// </summary>
+    /// <typeparam name="T">The type of returned data.</typeparam>
+    public class MpvResponse<T>
     {
         public string Error { get; set; } = string.Empty;
-        public string? Data { get; set; }
+        public T Data { get; set; } = default!;
         public int? RequestID { get; set; }
+
+        /// <summary>
+        /// Returns whether the result is valid and contains data.
+        /// </summary>
+        public bool HasData => Data != null && Success;
+
+        /// <summary>
+        /// Returns whether the result status is success.
+        /// </summary>
+        public bool Success => Error == "success";
     }
 }

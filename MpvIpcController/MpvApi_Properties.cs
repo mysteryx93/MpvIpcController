@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HanumanInstitute.MpvIpcController.Models;
 
 // MPV JSON IPC protocol documentation
 // https://mpv.io/manual/stable/#json-ipc
@@ -813,5 +812,251 @@ namespace HanumanInstitute.MpvIpcController
         public MpvPropertyIndexRead<int, float?> TrackListReplayGainAlbumGain => _trackListReplayGainAlbumGain ??= new MpvPropertyIndexRead<int, float?>(this, "track-list/{0}/replaygain-album-gain");
         private MpvPropertyIndexRead<int, float?>? _trackListReplayGainAlbumGain;
 
+        /// <summary>
+        /// Returns the amount of chapters.
+        /// </summary>
+        public MpvPropertyRead<int?> ChapterListCount => _chapterListCount ??= new MpvPropertyRead<int?>(this, "chapter-list/count");
+        private MpvPropertyRead<int?>? _chapterListCount;
+
+        /// <summary>
+        /// Chapter title as stored in the file. Not always available.
+        /// </summary>
+        public MpvPropertyIndexRead<int, string?> ChapterListTitle => _chapterListTitle ??= new MpvPropertyIndexRead<int, string?>(this, "chapter-list/{0}/title");
+        private MpvPropertyIndexRead<int, string?>? _chapterListTitle;
+
+        /// <summary>
+        /// Chapter start time in seconds.
+        /// </summary>
+        public MpvPropertyIndexRead<int, double?> ChapterListTime => _chapterListTime ??= new MpvPropertyIndexRead<int, double?>(this, "chapter-list/{0}/time");
+        private MpvPropertyIndexRead<int, double?>? _chapterListTime;
+
+        /// <summary>
+        /// Specify a list of audio filters to apply to the audio stream. See AUDIO FILTERS for details and descriptions of the available filters.
+        /// </summary>
+        public MpvPropertyRead<IList<AudioVideoFilter>?> AudioFilter => _audioFilter ??= new MpvPropertyRead<IList<AudioVideoFilter>?>(this, "af");
+        private MpvPropertyRead<IList<AudioVideoFilter>?>? _audioFilter;
+
+        /// <summary>
+        /// Specify a list of video filters to apply to the video stream. See VIDEO FILTERS for details and descriptions of the available filters.
+        /// </summary>
+        public MpvPropertyRead<IList<AudioVideoFilter>?> VideoFilter => _videoFilter ??= new MpvPropertyRead<IList<AudioVideoFilter>?>(this, "vf");
+        private MpvPropertyRead<IList<AudioVideoFilter>?>? _videoFilter;
+
+        /// <summary>
+        /// Return whether it's generally possible to seek in the current file.
+        /// </summary>
+        public MpvPropertyRead<bool?> Seekable => _seekable ??= new MpvPropertyRead<bool?>(this, "seekable");
+        private MpvPropertyRead<bool?>? _seekable;
+
+        /// <summary>
+        /// Return True if the current file is considered seekable, but only because the cache is active. This means small relative seeks may be fine, but larger seeks may fail anyway. Whether a seek will succeed or not is generally not known in advance.
+        /// If this property returns True, seekable will also return True.
+        /// </summary>
+        public MpvPropertyRead<bool?> PartiallySeekable => _partiallySeekable ??= new MpvPropertyRead<bool?>(this, "partially-seekable");
+        private MpvPropertyRead<bool?>? _partiallySeekable;
+
+        /// <summary>
+        /// Return whether playback is stopped or is to be stopped. (Useful in obscure situations like during on_load hook processing, when the user can stop playback, but the script has to explicitly end processing.)
+        /// </summary>
+        public MpvPropertyRead<bool?> PlaybackAbort => _playbackAbort ??= new MpvPropertyRead<bool?>(this, "playback-abort");
+        private MpvPropertyRead<bool?>? _playbackAbort;
+
+        /// <summary>
+        /// Inserts the current OSD symbol as opaque OSD control code (cc). This makes sense only with the show-text command or options which set OSD messages. The control code is implementation specific and is useless for anything else.
+        /// </summary>
+        public MpvPropertyRead<string?> OsdSymCc => _osdSymCc ??= new MpvPropertyRead<string?>(this, "osd-sym-cc");
+        private MpvPropertyRead<string?>? _osdSymCc;
+
+        /// <summary>
+        /// Return whether the VO is configured right now. Usually this corresponds to whether the video window is visible. If the --force-window option is used, this is usually always returns yes.
+        /// </summary>
+        public MpvPropertyRead<bool?> VoConfigured => _voConfigured ??= new MpvPropertyRead<bool?>(this, "vo-configured");
+        private MpvPropertyRead<bool?>? _voConfigured;
+
+        /// <summary>
+        /// Contains introspection about the VO's active render passes and their execution times. Not implemented by all VOs.
+        /// Fresh passes have to be uploaded, scaled, etc.
+        /// </summary>
+        public VideoOutputPassProperties VoPassFresh => _voPassFresh ??= new VideoOutputPassProperties(this, "vo-passes/fresh");
+        private VideoOutputPassProperties? _voPassFresh;
+
+        /// <summary>
+        /// Contains introspection about the VO's active render passes and their execution times. Not implemented by all VOs.
+        /// Redraw passes have to be re-painted.
+        /// </summary>
+        public VideoOutputPassProperties VoPassRedraw => _voPassRedraw ??= new VideoOutputPassProperties(this, "vo-passes/redraw");
+        private VideoOutputPassProperties? _voPassRedraw;
+
+        /// <summary>
+        /// Bitrate values calculated on the packet level. This works by dividing the bit size of all packets between two keyframes by their presentation timestamp distance. (This uses the timestamps are stored in the file, so e.g. playback speed does not influence the returned values.) In particular, the video bitrate will update only per keyframe, and show the "past" bitrate. To make the property more UI friendly, updates to these properties are throttled in a certain way.
+        /// The unit is bits per second.OSD formatting turns these values in kilobits(or megabits, if appropriate), which can be prevented by using the raw property value, e.g.with ${=video-bitrate}.
+        /// </summary>
+        public MpvPropertyRead<long?> VideoBitrate => _videoBitrate ??= new MpvPropertyRead<long?>(this, "video-bitrate");
+        private MpvPropertyRead<long?>? _videoBitrate;
+
+        /// <summary>
+        /// Bitrate values calculated on the packet level. This works by dividing the bit size of all packets between two keyframes by their presentation timestamp distance. (This uses the timestamps are stored in the file, so e.g. playback speed does not influence the returned values.) In particular, the video bitrate will update only per keyframe, and show the "past" bitrate. To make the property more UI friendly, updates to these properties are throttled in a certain way.
+        /// The unit is bits per second.OSD formatting turns these values in kilobits(or megabits, if appropriate), which can be prevented by using the raw property value, e.g.with ${=video-bitrate}.
+        /// </summary>
+        public MpvPropertyRead<long?> AudioBitrate => _audioBitrate ??= new MpvPropertyRead<long?>(this, "audio-bitrate");
+        private MpvPropertyRead<long?>? _audioBitrate;
+
+        /// <summary>
+        /// Bitrate values calculated on the packet level. This works by dividing the bit size of all packets between two keyframes by their presentation timestamp distance. (This uses the timestamps are stored in the file, so e.g. playback speed does not influence the returned values.) In particular, the video bitrate will update only per keyframe, and show the "past" bitrate. To make the property more UI friendly, updates to these properties are throttled in a certain way.
+        /// The unit is bits per second.OSD formatting turns these values in kilobits(or megabits, if appropriate), which can be prevented by using the raw property value, e.g.with ${=video-bitrate}.
+        /// </summary>
+        public MpvPropertyRead<long?> SubBitrate => _subBitrate ??= new MpvPropertyRead<long?>(this, "sub-bitrate");
+        private MpvPropertyRead<long?>? _subBitrate;
+
+        /// <summary>
+        /// Return the list of discovered audio devices. Reflects what --audio-device=help with the command line player returns.
+        /// </summary>
+        public MpvPropertyRead<IList<AudioDeviceInfo>?> AudioDeviceList => _audioDeviceList ??= new MpvPropertyRead<IList<AudioDeviceInfo>?>(this, "audio-device-list");
+        private MpvPropertyRead<IList<AudioDeviceInfo>?>? _audioDeviceList;
+
+        /// <summary>
+        /// Current video output driver (name as used with --vo).
+        /// </summary>
+        public MpvPropertyRead<string?> CurrentVideoOutput => _currentVideoOutput ??= new MpvPropertyRead<string?>(this, "current-vo");
+        private MpvPropertyRead<string?>? _currentVideoOutput;
+
+        /// <summary>
+        /// Current audio output driver (name as used with --ao).
+        /// </summary>
+        public MpvPropertyRead<string?> CurrentAudioOutput => _currentAudioOutput ??= new MpvPropertyRead<string?>(this, "current-ao");
+        private MpvPropertyRead<string?>? _currentAudioOutput;
+
+        /// <summary>
+        /// Return the working directory of the mpv process.
+        /// </summary>
+        public MpvPropertyRead<string?> WorkingDirectory => _workingDirectory ??= new MpvPropertyRead<string?>(this, "working-directory");
+        private MpvPropertyRead<string?>? _workingDirectory;
+
+        /// <summary>
+        /// List of protocol prefixes potentially recognized by the player. They are returned without trailing :// suffix (which is still always required). In some cases, the protocol will not actually be supported (consider https if ffmpeg is not compiled with TLS support).
+        /// </summary>
+        public MpvPropertyRead<IList<string>?> ProtocolList => _protocolList ??= new MpvPropertyRead<IList<string>?>(this, "protocol-list");
+        private MpvPropertyRead<IList<string>?>? _protocolList;
+
+        /// <summary>
+        /// List of decoders supported. This lists decoders which can be passed to --vd and --ad.
+        /// </summary>
+        public MpvPropertyRead<IList<DecoderInfo>?> DecoderList => _decoderList ??= new MpvPropertyRead<IList<DecoderInfo>?>(this, "decoder-list");
+        private MpvPropertyRead<IList<DecoderInfo>?>? _decoderList;
+
+        /// <summary>
+        /// List of libavcodec encoders. The encoder names (driver entries) can be passed to --ovc and --oac (without the lavc: prefix required by --vd and --ad).
+        /// </summary>
+        public MpvPropertyRead<IList<DecoderInfo>?> EncoderList => _encoderList ??= new MpvPropertyRead<IList<DecoderInfo>?>(this, "encoder-list");
+        private MpvPropertyRead<IList<DecoderInfo>?>? _encoderList;
+
+        /// <summary>
+        /// List of available libavformat demuxers' names. This can be used to check for support for a specific format or use with --demuxer-lavf-format.
+        /// </summary>
+        public MpvPropertyRead<IList<string>?> DemuxerLavfList => _demuxerLavfList ??= new MpvPropertyRead<IList<string>?>(this, "demuxer-lavf-list");
+        private MpvPropertyRead<IList<string>?>? _demuxerLavfList;
+
+        /// <summary>
+        /// Return the mpv version/copyright string. Depending on how the binary was built, it might contain either a release version, or just a git hash.
+        /// </summary>
+        public MpvPropertyRead<string?> MpvVersion => _mpvVersion ??= new MpvPropertyRead<string?>(this, "mpv-version");
+        private MpvPropertyRead<string?>? _mpvVersion;
+
+        /// <summary>
+        /// Return the configuration arguments which were passed to the build system (typically the way ./waf configure ... was invoked).
+        /// </summary>
+        public MpvPropertyRead<string?> MpvConfiguration => _mpvConfiguration ??= new MpvPropertyRead<string?>(this, "mpv-configuration");
+        private MpvPropertyRead<string?>? _mpvConfiguration;
+
+        /// <summary>
+        /// Return the contents of the av_version_info() API call. This is a string which identifies the build in some way, either through a release version number, or a git hash. This applies to Libav as well (the property is still named the same.) This property is unavailable if mpv is linked against older FFmpeg and Libav versions.
+        /// </summary>
+        public MpvPropertyRead<string?> FFmpegVersion => _ffmpegVersion ??= new MpvPropertyRead<string?>(this, "ffmpeg-version");
+        private MpvPropertyRead<string?>? _ffmpegVersion;
+
+        /// <summary>
+        /// Read-only access to value of option --<name>. Most options can be changed at runtime by writing to this property. Note that many options require reloading the file for changes to take effect. If there is an equivalent property, prefer setting the property instead.
+        /// There shouldn't be any reason to access options/<name> instead of <name>, except in situations in which the properties have different behavior or conflicting semantics.
+        /// </summary>
+        public MpvPropertyIndexWrite<string, string?> Option => _option ??= new MpvPropertyIndexWrite<string, string?>(this, "options/{0}");
+        private MpvPropertyIndexWrite<string, string?>? _option;
+
+        /// <summary>
+        /// Similar to Option, but when setting an option through this property, the option is reset to its old value once the current file has stopped playing. Trying to write an option while no file is playing (or is being loaded) results in an error.
+        /// </summary>
+        public MpvPropertyIndexWrite<string, string?> FileLocalOption => _fileLocalOption ??= new MpvPropertyIndexWrite<string, string?>(this, "file-local-options/{0}");
+        private MpvPropertyIndexWrite<string, string?>? _fileLocalOption;
+
+        /// <summary>
+        /// Returns the name of the option.
+        /// </summary>
+        public MpvPropertyIndexRead<string, string?> OptionName => _optionName ??= new MpvPropertyIndexRead<string, string?>(this, "option-info/{0}/name");
+        private MpvPropertyIndexRead<string, string?>? _optionName;
+
+        /// <summary>
+        /// Returns the name of the option type, like String or Integer. For many complex types, this isn't very accurate.
+        /// </summary>
+        public MpvPropertyIndexRead<string, string?> OptionType => _optionType ??= new MpvPropertyIndexRead<string, string?>(this, "option-info/{0}/type");
+        private MpvPropertyIndexRead<string, string?>? _optionType;
+
+        /// <summary>
+        /// Return True if the option was set from the mpv command line, otherwise False. What this is set to if the option is e.g. changed at runtime is left undefined (meaning it could change in the future).
+        /// </summary>
+        public MpvPropertyIndexRead<string, bool?> OptionSetFromCommandLine => _optionSetFromCommandLine ??= new MpvPropertyIndexRead<string, bool?>(this, "option-info/{0}/set-from-commandline");
+        private MpvPropertyIndexRead<string, bool?>? _optionSetFromCommandLine;
+
+        /// <summary>
+        /// Returns True if the option was set per-file. This is the case with automatically loaded profiles, file-dir configs, and other cases. It means the option value will be restored to the value before playback start when playback ends.
+        /// </summary>
+        public MpvPropertyIndexRead<string, bool?> OptionSetLocally => _optionSetLocally ??= new MpvPropertyIndexRead<string, bool?>(this, "option-info/{0}/set-locally");
+        private MpvPropertyIndexRead<string, bool?>? _optionSetLocally;
+
+        /// <summary>
+        /// The default value of the option. May not always be available.
+        /// </summary>
+        public MpvPropertyIndexRead<string, string?> OptionDefaultValue => _optionDefaultValue ??= new MpvPropertyIndexRead<string, string?>(this, "option-info/{0}/default-value");
+        private MpvPropertyIndexRead<string, string?>? _optionDefaultValue;
+
+        /// <summary>
+        /// Integer minimum value allowed for the option. Only available if the options are numeric, and the minimum/maximum has been set internally. It's also possible that only one of these is set.
+        /// </summary>
+        public MpvPropertyIndexRead<string, int?> OptionMin => _optionMin ??= new MpvPropertyIndexRead<string, int?>(this, "option-info/{0}/min");
+        private MpvPropertyIndexRead<string, int?>? _optionMin;
+
+        /// <summary>
+        /// Integer minimum value allowed for the option. Only available if the options are numeric, and the minimum/maximum has been set internally. It's also possible that only one of these is set.
+        /// </summary>
+        public MpvPropertyIndexRead<string, int?> OptionMax => _optionMax ??= new MpvPropertyIndexRead<string, int?>(this, "option-info/{0}/max");
+        private MpvPropertyIndexRead<string, int?>? _optionMax;
+
+        /// <summary>
+        /// If the option is a choice option, the possible choices. Choices that are integers may or may not be included (they can be implied by min and max). Note that options which behave like choice options, but are not actual choice options internally, may not have this info available.
+        /// </summary>
+        public MpvPropertyIndexRead<string, IList<string>?> OptionChoices => _optionChoices ??= new MpvPropertyIndexRead<string, IList<string>?>(this, "option-info/{0}/choices");
+        private MpvPropertyIndexRead<string, IList<string>?>? _optionChoices;
+
+        /// <summary>
+        /// Return the list of top-level properties.
+        /// </summary>
+        public MpvPropertyRead<IList<string>?> PropertyList => _propertyList ??= new MpvPropertyRead<IList<string>?>(this, "property-list");
+        private MpvPropertyRead<IList<string>?>? _propertyList;
+
+        /// <summary>
+        /// Return the list of profiles and their contents. This is highly implementation-specific, and may change any time. Currently, it returns an array of options for each profile. Each option has a name and a value, with the value currently always being a string. Note that the options array is not a map, as order matters and duplicate entries are possible. Recursive profiles are not expanded, and show up as special profile options.
+        /// </summary>
+        public MpvPropertyRead<IList<IList<KeyValuePair<string, string>>>?> ProfileList => _profileList ??= new MpvPropertyRead<IList<IList<KeyValuePair<string, string>>>?>(this, "profile-list");
+        private MpvPropertyRead<IList<IList<KeyValuePair<string, string>>>?>? _profileList;
+
+        /// <summary>
+        /// Return the list of input commands. This returns an array of maps, where each map node represents a command. This map currently only has a single entry: name for the name of the command. (This property is supposed to be a replacement for --input-cmdlist. The option dumps some more information, but it's a valid feature request to extend this property if needed.)
+        /// </summary>
+        public MpvPropertyRead<IList<CommandInfo>?> CommandList => _commandList ??= new MpvPropertyRead<IList<CommandInfo>?>(this, "command-list");
+        private MpvPropertyRead<IList<CommandInfo>?>? _commandList;
+
+        /// <summary>
+        /// Return list of current input key bindings. This returns an array of maps, where each map node represents a binding for a single key/command.
+        /// </summary>
+        public MpvPropertyRead<IList<CommandInfo>?> InputBindings => _inputBindings ??= new MpvPropertyRead<IList<CommandInfo>?>(this, "input-bindings");
+        private MpvPropertyRead<IList<CommandInfo>?>? _inputBindings;
     }
 }

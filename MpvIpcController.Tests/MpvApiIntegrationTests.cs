@@ -21,7 +21,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
 
             var response = await app.Api.GetClientNameAsync();
 
-            Assert.NotEmpty(response);
+            Assert.NotEmpty(response?.Data);
             await app.LogAndQuitAsync(_output);
         }
 
@@ -32,7 +32,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
 
             var response = await app.Api.GetVersionAsync();
 
-            Assert.True(response > 0);
+            Assert.True(response?.Data > 0);
             await app.LogAndQuitAsync(_output);
         }
 
@@ -41,7 +41,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            await app.Api.LoadFileAsync(app.SampleClip, options: new MpvCommandOptions().NoOsd());
+            await app.Api.LoadFileAsync(app.SampleClip, options: new MpvCommandOptions() { NoOsd = true });
 
             await app.LogAndQuitAsync(_output);
         }
@@ -51,7 +51,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
-            await app.Controller.SendMessageAsync(options: new MpvCommandOptions().DoNotWait(), "invalidcommand");
+            await app.Controller.SendMessageAsync(options: new MpvCommandOptions() { WaitForResponse = false }, "invalidcommand");
 
             await app.LogAndQuitAsync(_output);
         }
@@ -65,7 +65,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             {
                 var result = await app.Api.IdleActive.GetAsync();
 
-                Assert.True(result);
+                Assert.True(result?.Data);
             }
             finally
             {
@@ -83,7 +83,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
                 await app.Api.LoadFileAsync(app.SampleClip);
                 var result = await app.Api.Metadata.Metadata.GetAsync();
 
-                Assert.NotEmpty(result);
+                Assert.NotEmpty(result?.Data);
             }
             finally
             {
@@ -120,7 +120,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
                 var result = await app.Api.DemuxerCacheState.GetAsync();
 
                 Assert.NotNull(result);
-                Assert.NotEqual(0, result?.RawInputRate);
+                Assert.NotEqual(0, result?.Data?.RawInputRate);
             }
             finally
             {
@@ -148,17 +148,18 @@ namespace HanumanInstitute.MpvIpcController.Tests
         }
 
         [Fact]
-        public async Task VideoFrame_ValidFile_ReturnsValue()
+        public async Task Z_RunCommand_ReturnsValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
             try
             {
-                await app.Api.LoadFileAsync(app.SampleClip);
+                app.Controller.ResponseTimeout = -1;
+                // await app.Api.LoadFileAsync(app.SampleClip);
                 await Task.Delay(100);
-                var result = await app.Api.VideoParams.SignalPeak.GetAsync();
+                await app.Api.SubProcessAsync(@"C:\Windows\notepad.exe");
 
-                Assert.NotNull(result);
+                // Assert.NotNull(result);
             }
             finally
             {

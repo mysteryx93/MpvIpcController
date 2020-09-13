@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -115,30 +116,47 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
-        /// Sends specified message to MPV and returns a nullable value of specified value type.
+        /// Sends specified message to MPV and returns a value of specified type.
         /// </summary>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<T> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd)
+        public async Task<MpvResponse<T>?> SendMessageAsync<T>(MpvCommandOptions? options, params object?[] cmd)
         {
             var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
-            return ParseData<T>(result)!;
+
+            if (result != null)
+            {
+                var data = ParseData<T>(result.Data);
+
+                return new MpvResponse<T>()
+                {
+                    Data = data!,
+                    Error = result.Error,
+                    RequestID = result.RequestID
+                };
+            }
+            return null;
         }
 
         /// <summary>
-        /// Sends specified message to MPV.
+        /// Sends specified message to MPV and returns the response as string.
         /// </summary>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public async Task<string?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
+        public async Task<MpvResponse?> SendMessageAsync(MpvCommandOptions? options, params object?[] cmd)
         {
             cmd.CheckNotNullOrEmpty(nameof(cmd));
 
             // Append prefixes and remove null values at the end.
             var cmdLength = cmd.Length;
-            var prefixCount = options?.Prefixes?.Count ?? 0;
+            var prefixes = options?.GetPrefixes();
+            var prefixCount = prefixes?.Count ?? 0;
             for (var i = cmd.Length - 1; i >= 0; i--)
             {
                 if (cmd[i] == null)
@@ -156,7 +174,7 @@ namespace HanumanInstitute.MpvIpcController
                 cmd = new object?[cmdLength + prefixCount];
                 for (var i = 0; i < prefixCount; i++)
                 {
-                    cmd[i] = options!.Prefixes![i];
+                    cmd[i] = prefixes![i];
                 }
                 Array.Copy(cmd2, 0, cmd, prefixCount, cmdLength);
             }
@@ -227,11 +245,11 @@ namespace HanumanInstitute.MpvIpcController
                 }
             }
 
-            if (response.Error != "success")
+            if (options?.ThrowOnError == true && !response.Success)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", cmd[0], response.Error));
             }
-            return response.Data;
+            return response;
         }
 
         /// <summary>
