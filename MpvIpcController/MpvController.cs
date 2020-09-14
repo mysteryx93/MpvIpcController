@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.XPath;
 using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
@@ -23,7 +24,7 @@ namespace HanumanInstitute.MpvIpcController
         private readonly NamedPipeClientStream _connection;
         private int _requestId = 1;
         private readonly List<MpvResponse> _responses = new List<MpvResponse>();
-        private readonly ManualResetEventSlim _waitResponse = new ManualResetEventSlim(true);
+        private readonly ManualResetEvent _waitResponse = new ManualResetEvent(true);
         private int _responseTimeout = 3000;
         private bool _logEnabled;
         private readonly object _lockLogEnabled = new object();
@@ -118,25 +119,18 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Sends specified message to MPV and returns a value of specified type.
         /// </summary>
+        /// <typeparam name="T">The response data type.</typeparam>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
         public async Task<MpvResponse<T>?> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd)
         {
             var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
-
-            if (result != null)
-            {
-                var data = ParseData<T>(result.Data);
-
-                return new MpvResponse<T>()
-                {
-                    Data = data!,
-                    Error = result.Error,
-                    RequestID = result.RequestID
-                };
-            }
-            return null;
+            return result.Parse<T>();
         }
 
         /// <summary>
@@ -179,6 +173,42 @@ namespace HanumanInstitute.MpvIpcController
                 Array.Copy(cmd2, 0, cmd, prefixCount, cmdLength);
             }
 
+            return await SendMessageNamedAsync(options, cmd, cmd[0]!.ToString()).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sends specified message to MPV and returns a value of specified type.
+        /// </summary>
+        /// <typeparam name="T">The response data type.</typeparam>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command object to send. It can be an array of parameters or a named object.</param>
+        /// <param name="commandName">The name of the command being executed. Only used for debugging.</param>
+        /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
+        public async Task<MpvResponse<T>?> SendMessageNamedAsync<T>(ApiOptions? options, object cmd, string commandName)
+        {
+            var result = await SendMessageNamedAsync(options, cmd, commandName).ConfigureAwait(false);
+            return result.Parse<T>();
+        }
+
+        /// <summary>
+        /// Sends specified message to MPV and returns the response as string.
+        /// </summary>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command object to send. It can be an array of parameters or a named object.</param>
+        /// <param name="commandName">The name of the command being executed. Only used for debugging.</param>
+        /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
+        public async Task<MpvResponse?> SendMessageNamedAsync(ApiOptions? options, object cmd, string commandName)
+        {
+            cmd.CheckNotNull(nameof(cmd));
+
             // Prepare the request.
             var request = new MpvRequest()
             {
@@ -210,12 +240,23 @@ namespace HanumanInstitute.MpvIpcController
                 return null;
             }
 
+            return await WaitForResponseAsync(request.RequestId!.Value, commandName, options).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Waits for a response with specified request ID.
+        /// </summary>
+        /// <param name="requestId">The request ID to wait for.</param>
+        /// <param name="commandName">The name of the command being executed.</param>
+        /// <param name="options">Additional command options.</param>
+        private async Task<MpvResponse> WaitForResponseAsync(int requestId, string commandName, ApiOptions? options = null, CancellationToken? cancelToken = null)
+        {
             // Wait for response with matching RequestId.
             var watch = new Stopwatch();
             watch.Start();
-            var response = FindResponse(request.RequestId.Value);
+            var response = FindResponse(requestId);
             var maxTimeout = options?.ResponseTimeout ?? ResponseTimeout;
-            while (response == null && (maxTimeout < 0 || watch.ElapsedMilliseconds < maxTimeout))
+            while (response == null && (maxTimeout < 0 || watch.ElapsedMilliseconds < maxTimeout) && cancelToken?.IsCancellationRequested != true)
             {
                 // Calculate wait timeout.
                 var timeout = 1000;
@@ -227,14 +268,14 @@ namespace HanumanInstitute.MpvIpcController
 
                 // Wait until any message is received.
                 _waitResponse.Reset();
-                _waitResponse.Wait(timeout);
-                response = FindResponse(request.RequestId.Value);
+                await _waitResponse.WaitOneAsync(timeout, cancelToken).ConfigureAwait(false);
+                response = FindResponse(requestId);
             }
 
             // Timeout.
             if (response == null)
             {
-                throw new TimeoutException($"A response from MPV to request_id={request.RequestId.Value} was not received before timeout.");
+                throw new TimeoutException($"A response from MPV to request_id={requestId} was not received before timeout.");
             }
             else
             {
@@ -247,7 +288,7 @@ namespace HanumanInstitute.MpvIpcController
 
             if (options?.ThrowOnError == true && !response.Success)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", cmd[0], response.Error));
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", commandName, response.Error));
             }
             return response;
         }
@@ -302,7 +343,7 @@ namespace HanumanInstitute.MpvIpcController
                 {
                     if (item.Name != "event")
                     {
-                        response.Data.Add(item.Name, item.Value.GetString());
+                        response.Data.Add(item.Name, item.Value.ToStringInvariant());
                     }
                 }
                 return response;
@@ -330,47 +371,6 @@ namespace HanumanInstitute.MpvIpcController
                 throw new InvalidDataException($"Unrecognized message: {message}");
             }
         }
-
-        [return: MaybeNull]
-        private static T ParseData<T>(string? data)
-        {
-            if (data == null) { return default; }
-
-            if (typeof(T) == typeof(string))
-            {
-                return (T)(object)data;
-            }
-            if (typeof(T).IsValueType)
-            {
-                var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-                return (T)Convert.ChangeType(data, type, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                var jsonOptions = new JsonSerializerOptions()
-                {
-                    PropertyNamingPolicy = new MpvJsonNamingPolicy()
-                };
-                return JsonSerializer.Deserialize<T>(data, jsonOptions);
-            }
-        }
-
-        //private static T ParseData<T>(string data) => (T)Convert.ChangeType(data, typeof(T), CultureInfo.InvariantCulture);
-
-        //private static T? ParseDataStruct<T>(string? data)
-        //    where T : struct
-        //{
-        //    return data != null ? ParseData<T>(data) : default;
-        //}
-
-        //private static T? ParseDataClass<T>(string? data)
-        //    where T : class
-        //{
-        //    return typeof(T) == typeof(string) ?
-        //        (data != null ? ParseData<T>(data) : default) :
-        //        JsonSerializer.Deserialize<T>(data);
-        //}
-
 
 
         private bool _disposedValue;

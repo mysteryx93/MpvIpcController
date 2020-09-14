@@ -8,6 +8,7 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     public class OverlayRequest
     {
+        public string? Name { get; set; }
         public int? Id { get; set; }
         public string? Format { get; set; }
         public string? Data { get; set; }

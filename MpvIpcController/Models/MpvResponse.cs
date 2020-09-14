@@ -17,13 +17,14 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvResponse<T>
     {
         public string Error { get; set; } = string.Empty;
+        [AllowNull]
         public T Data { get; set; } = default!;
         public int? RequestID { get; set; }
 
         /// <summary>
         /// Returns whether the result is valid and contains data.
         /// </summary>
-        public bool HasData => Data != null && Success;
+        public bool HasValue => Data != null && Success;
 
         /// <summary>
         /// Returns whether the result status is success.

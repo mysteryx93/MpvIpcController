@@ -9,6 +9,7 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     public class SubProcessRequest
     {
+        public string? Name { get; set; }
         /// <summary>
         /// Array of strings with the command as first argument, and subsequent command line arguments following. This is just like the run command argument list.
         /// The first array entry is either an absolute path to the executable, or a filename with no path components, in which case the PATH environment variable.On Unix, this is equivalent to posix_spawnp and execvp behavior.

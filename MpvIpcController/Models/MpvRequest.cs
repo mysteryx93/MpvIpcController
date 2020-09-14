@@ -10,7 +10,7 @@ namespace HanumanInstitute.MpvIpcController
     public class MpvRequest
     {
         [JsonPropertyName("command")]
-        public IEnumerable Command { get; set; } = null!;
+        public object Command { get; set; } = null!;
         [JsonPropertyName("request_id")]
         public int? RequestId { get; set; }
     }

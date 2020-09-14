@@ -41,6 +41,17 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
+        /// Returns the raw value of the given property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to get.</param>
+        public async Task<MpvResponse?> GetPropertyAsync(string propertyName, ApiOptions? options = null)
+        {
+            propertyName.CheckNotNullOrEmpty(nameof(propertyName));
+
+            return await _mpv.SendMessageAsync(options, "get_property", propertyName).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Returns the value of the given property as a nullable value type.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
@@ -405,13 +416,13 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="captureStdOut">Capture all data the process outputs to stdout and return it once the process ends (optional, default: false).</param>
         /// <param name="captureStdErr">Capture all data the process outputs to stderr and return it once the process ends (optional, default: false).</param>
         /// <returns>Process data of type SubProcessResponse.</returns>
-        public async Task SubProcessAsync(string command, IEnumerable<string>? args = null, bool? playbackOnly = null, int? captureSize = null, bool? captureStdOut = null, bool? captureStdErr = null, ApiOptions? options = null)
+        public async Task<MpvResponse<SubProcessResponse?>?> SubProcessAsync(string command, IEnumerable<string>? args = null, bool? playbackOnly = null, int? captureSize = null, bool? captureStdOut = null, bool? captureStdErr = null, ApiOptions? options = null)
         {
             command.CheckNotNullOrEmpty(nameof(command));
 
             var data = new SubProcessRequest()
             {
-                // Name = "subprocess",
+                Name = "subprocess",
                 PlaybackOnly = playbackOnly,
                 CaptureSize = captureSize,
                 CaptureStdOut = captureStdOut,
@@ -426,7 +437,7 @@ namespace HanumanInstitute.MpvIpcController
                 }
             }
 
-            await _mpv.SendMessageAsync<SubProcessRequest>(options, data).ConfigureAwait(false);
+            return await _mpv.SendMessageNamedAsync<SubProcessResponse?>(options, data, data.Name).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -778,10 +789,11 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="playResX">Specify the value of ASS PlayResX.</param>
         /// <param name="playResY">Specify the value of ASS PlayResY.</param>
         /// <param name="zOrder">The Z order of the overlay.</param>
-        public async Task TextOverlayAdd(string text, int id = 0, int? playResX = null, int? playResY = null, int? zOrder = null, ApiOptions? options = null)
+        public async Task<MpvResponse?> AssOverlayAdd(string text, int id = 0, int? playResX = null, int? playResY = null, int? zOrder = null, ApiOptions? options = null)
         {
             var data = new OverlayRequest()
             {
+                Name = "osd-overlay",
                 Id = id,
                 Format = "ass-events",
                 Data = text,
@@ -789,14 +801,14 @@ namespace HanumanInstitute.MpvIpcController
                 ResY = playResY,
                 Z = zOrder
             };
-            await _mpv.SendMessageAsync(options, data).ConfigureAwait(false);
+            return await _mpv.SendMessageNamedAsync(options, data, data.Name).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Removes an OSD overlay.
         /// </summary>
         /// <param name="id">Arbitrary integer that identifies the overlay.</param>
-        public async Task TextOverlayRemove(int id = 0, ApiOptions? options = null)
+        public async Task AssOverlayRemove(int id = 0, ApiOptions? options = null)
         {
             var data = new OverlayRequest()
             {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,9 +25,14 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Sends specified message to MPV and returns a value of specified type.
         /// </summary>
+        /// <typeparam name="T">The response data type.</typeparam>
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
         Task<MpvResponse<T>?> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd);
         /// <summary>
         /// Sends specified message to MPV and returns the response as string.
@@ -36,6 +40,35 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
         Task<MpvResponse?> SendMessageAsync(ApiOptions? options, params object?[] cmd);
+        /// <summary>
+        /// Sends specified message to MPV and returns a value of specified type.
+        /// </summary>
+        /// <typeparam name="T">The response data type.</typeparam>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command object to send. It can be an array of parameters or a named object.</param>
+        /// <param name="commandName">The name of the command being executed. Only used for debugging.</param>
+        /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
+        Task<MpvResponse<T>?> SendMessageNamedAsync<T>(ApiOptions? options, object cmd, string commandName);
+        /// <summary>
+        /// Sends specified message to MPV and returns the response as string.
+        /// </summary>
+        /// <param name="options">Additional command options.</param>
+        /// <param name="cmd">The command object to send. It can be an array of parameters or a named object.</param>
+        /// <param name="commandName">The name of the command being executed. Only used for debugging.</param>
+        /// <returns>The server's response to the command.</returns>
+        /// <exception cref="InvalidOperationException">The response contained an error and ThrowOnError is True.</exception>
+        /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
+        /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
+        /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
+        Task<MpvResponse?> SendMessageNamedAsync(ApiOptions? options, object cmd, string commandName);
     }
 }

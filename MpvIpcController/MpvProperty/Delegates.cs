@@ -9,7 +9,7 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TApi">The type to parse from.</typeparam>
     /// <param name="value">The value to parse.</param>
     /// <returns>The parsed value of type TResult.</returns>
-    public delegate TResult PropertyParser<TResult, TApi>(TApi value);
+    public delegate T CustomParser<T>(MpvResponse? value);
 
     /// <summary>
     /// Formats a value from type TResult to type TApi.
@@ -18,5 +18,5 @@ namespace HanumanInstitute.MpvIpcController
     /// <typeparam name="TApi">The type to format to.</typeparam>
     /// <param name="value">The formatted value of type TApi.</param>
     /// <returns></returns>
-    public delegate TApi PropertyFormatter<TResult, TApi>(TResult value);
+    public delegate object? CustomFormatter<T>(T value);
 }

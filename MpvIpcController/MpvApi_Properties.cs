@@ -198,13 +198,6 @@ namespace HanumanInstitute.MpvIpcController
         private MpvPropertyWrite<int?>? _chapter;
 
         /// <summary>
-        /// Current MKV edition number. Setting this property to a different value will restart playback. The number of the first edition is 0.
-        /// Before mpv 0.31.0, this showed the actual edition selected at runtime, if you didn't set the option or property manually. With mpv 0.31.0 and later, this strictly returns the user-set option or property value, and the current-edition property was added to return the runtime selected edition (this matters with --edition=auto, the default).
-        /// </summary>
-        public MpvPropertyWrite<int?> Edition => _edition ??= new MpvPropertyWrite<int?>(this, "edition");
-        private MpvPropertyWrite<int?>? _edition;
-
-        /// <summary>
         /// Currently selected edition. This property is unavailable if no file is loaded, or the file has no editions. (Matroska files make a difference between having no editions and a single edition, which will be reflected by the property, although in practice it does not matter.)
         /// </summary>
         public MpvPropertyRead<int?> CurrentEdition => _currentEdition ??= new MpvPropertyRead<int?>(this, "current-edition");
@@ -829,18 +822,6 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvPropertyIndexRead<int, double?> ChapterListTime => _chapterListTime ??= new MpvPropertyIndexRead<int, double?>(this, "chapter-list/{0}/time");
         private MpvPropertyIndexRead<int, double?>? _chapterListTime;
-
-        /// <summary>
-        /// Specify a list of audio filters to apply to the audio stream. See AUDIO FILTERS for details and descriptions of the available filters.
-        /// </summary>
-        public MpvPropertyRead<IList<AudioVideoFilter>?> AudioFilter => _audioFilter ??= new MpvPropertyRead<IList<AudioVideoFilter>?>(this, "af");
-        private MpvPropertyRead<IList<AudioVideoFilter>?>? _audioFilter;
-
-        /// <summary>
-        /// Specify a list of video filters to apply to the video stream. See VIDEO FILTERS for details and descriptions of the available filters.
-        /// </summary>
-        public MpvPropertyRead<IList<AudioVideoFilter>?> VideoFilter => _videoFilter ??= new MpvPropertyRead<IList<AudioVideoFilter>?>(this, "vf");
-        private MpvPropertyRead<IList<AudioVideoFilter>?>? _videoFilter;
 
         /// <summary>
         /// Return whether it's generally possible to seek in the current file.

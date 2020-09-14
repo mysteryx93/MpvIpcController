@@ -155,11 +155,12 @@ namespace HanumanInstitute.MpvIpcController.Tests
             try
             {
                 app.Controller.ResponseTimeout = -1;
-                // await app.Api.LoadFileAsync(app.SampleClip);
+                await app.Api.LoadFileAsync(app.SampleClip);
                 await Task.Delay(100);
-                await app.Api.SubProcessAsync(@"C:\Windows\notepad.exe");
+                await app.Api.Pause.SetAsync(true, options: new ApiOptions() { ThrowOnError = true });
+                var result = await app.Api.Pause.GetAsync(options: new ApiOptions() { ThrowOnError = true });
 
-                // Assert.NotNull(result);
+                Assert.NotNull(result);
             }
             finally
             {

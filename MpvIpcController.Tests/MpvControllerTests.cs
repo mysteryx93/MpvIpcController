@@ -63,7 +63,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             var response = await requestTask;
 
             Assert.IsType<int>(response?.Data);
-            Assert.True(response?.HasData);
+            Assert.True(response?.HasValue);
         }
 
         [Fact]
