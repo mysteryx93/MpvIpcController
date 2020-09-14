@@ -157,8 +157,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
                 app.Controller.ResponseTimeout = -1;
                 await app.Api.LoadFileAsync(app.SampleClip);
                 await Task.Delay(100);
-                await app.Api.Pause.SetAsync(true, options: new ApiOptions() { ThrowOnError = true });
-                var result = await app.Api.Pause.GetAsync(options: new ApiOptions() { ThrowOnError = true });
+                await app.Api.OrderedChapters.SetAsync(false, options: new ApiOptions() { ThrowOnError = true });
+                var result = await app.Api.OrderedChapters.GetAsync(options: new ApiOptions() { ThrowOnError = true });
 
                 Assert.NotNull(result);
             }

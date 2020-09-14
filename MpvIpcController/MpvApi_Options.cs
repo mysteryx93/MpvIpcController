@@ -104,6 +104,81 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvOptionAuto<int?> PlaylistStart => _playlistStart ??= new MpvOptionAuto<int?>(this, "playlist-start");
         private MpvOptionAuto<int?>? _playlistStart;
-
+        /// <summary>
+        /// Play files according to a playlist file (Supports some common formats. If no format is detected, it will be treated as list of files, separated by newline characters. Note that XML playlist formats are not supported.)
+        /// You can play playlists directly and without this option, however, this option disables any security mechanisms that might be in place.You may also need this option to load plaintext files as playlist.
+        /// Do NOT use Playlist with random internet sources or files you do not trust!
+        /// </summary>
+        public MpvOption<string?> Playlist => _playlist ??= new MpvOption<string?>(this, "playlist");
+        private MpvOption<string?>? _playlist;
+        /// <summary>
+        /// Threshold for merging almost consecutive ordered chapter parts in milliseconds (default: 100). Some Matroska files with ordered chapters have inaccurate chapter end timestamps, causing a small gap between the end of one chapter and the start of the next one when they should match. If the end of one playback part is less than the given threshold away from the start of the next one then keep playing video normally over the chapter change instead of doing a seek.
+        /// </summary>
+        public MpvOption<int?> ChapterMergeThreshold => _chapterMergeThreshold ??= new MpvOption<int?>(this, "chapter-merge-threshold");
+        private MpvOption<int?>? _chapterMergeThreshold;
+        /// <summary>
+        /// Distance in seconds from the beginning of a chapter within which a backward chapter seek will go to the previous chapter (default: 5.0). Past this threshold, a backward chapter seek will go to the beginning of the current chapter instead. A negative value means always go back to the previous chapter.
+        /// </summary>
+        public MpvOption<double?> ChapterSeekThreshold => _chapterSeekThreshold ??= new MpvOption<double?>(this, "chapter-seek-threshold");
+        private MpvOption<double?>? _chapterSeekThreshold;
+        /// <summary>
+        /// Select when to use precise seeks that are not limited to keyframes. Such seeks require decoding video from the previous keyframe up to the target position and so can take some time depending on decoding performance. For some video formats, precise seeks are disabled. This option selects the default choice to use for seeks; it is possible to explicitly override that default in the definition of key bindings and in input commands.
+        /// </summary>
+        public MpvOptionEnum<HrSeekOption> HrSeek => _hrSeek ??= new MpvOptionEnum<HrSeekOption>(this, "hr-seek");
+        private MpvOptionEnum<HrSeekOption>? _hrSeek;
+        /// <summary>
+        /// This option exists to work around failures to do precise seeks (as in --hr-seek) caused by bugs or limitations in the demuxers for some file formats. Some demuxers fail to seek to a keyframe before the given target position, going to a later position instead. The value of this option is subtracted from the time stamp given to the demuxer. Thus, if you set this option to 1.5 and try to do a precise seek to 60 seconds, the demuxer is told to seek to time 58.5, which hopefully reduces the chance that it erroneously goes to some time later than 60 seconds. The downside of setting this option is that precise seeks become slower, as video between the earlier demuxer position and the real target may be unnecessarily decoded.
+        /// </summary>
+        public MpvOption<double?> HrSeekDemuxerOffset => _hrSeekDemuxerOffset ??= new MpvOption<double?>(this, "hr-seek-demuxer-offset");
+        private MpvOption<double?>? _hrSeekDemuxerOffset;
+        /// <summary>
+        /// Allow the video decoder to drop frames during seek, if these frames are before the seek target. If this is enabled, precise seeking can be faster, but if you're using video filters which modify timestamps or add new frames, it can lead to precise seeking skipping the target frame. This e.g. can break frame backstepping when deinterlacing is enabled.
+        /// </summary>
+        public MpvOption<bool?> HrSeekFrameDrop => _hrSeekFrameDrop ??= new MpvOption<bool?>(this, "hr-seek-framedrop");
+        private MpvOption<bool?>? _hrSeekFrameDrop;
+        /// <summary>
+        /// Controls how to seek in files. Note that if the index is missing from a file, it will be built on the fly by default, so you don't need to change this. But it might help with some broken files.
+        /// This option only works if the underlying media supports seeking (i.e. not with stdin, pipe, etc).
+        /// </summary>
+        public MpvOptionEnum<IndexMode> Index => _index ??= new MpvOptionEnum<IndexMode>(this, "index");
+        private MpvOptionEnum<IndexMode>? _index;
+        /// <summary>
+        /// Load URLs from playlists which are considered unsafe (default: no). This includes special protocols and anything that doesn't refer to normal files. Local files and HTTP links on the other hand are always considered safe.
+        /// In addition, if a playlist is loaded while this is set, the added playlist entries are not marked as originating from network or potentially unsafe location. (Instead, the behavior is as if the playlist entries were provided directly to mpv command line or loadfile command.)
+        /// </summary>
+        public MpvOption<bool?> LoadUnsafePlaylists => _loadUnsafePlaylists ??= new MpvOption<bool?>(this, "load-unsafe-playlists");
+        private MpvOption<bool?>? _loadUnsafePlaylists;
+        /// <summary>
+        /// Follow any references in the file being opened (default: yes). Disabling this is helpful if the file is automatically scanned (e.g. thumbnail generation). If the thumbnail scanner for example encounters a playlist file, which contains network URLs, and the scanner should not open these, enabling this option will prevent it. This option also disables ordered chapters, mov reference files, opening of archives, and a number of other features.
+        /// </summary>
+        public MpvOption<bool?> AccessReferences => _accessReferences ??= new MpvOption<bool?>(this, "access-references");
+        private MpvOption<bool?>? _accessReferences;
+        /// <summary>
+        /// Loops playback N times. A value of 1 plays it one time (default), 2 two times, etc. inf means forever. no is the same as 1 and disables looping. If several files are specified on command line, the entire playlist is looped. --loop-playlist is the same as --loop-playlist=inf.
+        /// The force mode is like inf, but does not skip playlist entries which have been marked as failing.This means the player might waste CPU time trying to loop a file that doesn't exist. But it might be useful for playing webradios under very bad network conditions.
+        /// </summary>
+        public MpvOption<string?> LoopPlaylist => _loopPlaylist ??= new MpvOption<string?>(this, "loop-playlist");
+        private MpvOption<string?>? _loopPlaylist;
+        /// <summary>
+        /// Loop a single file N times. inf means forever, no means normal playback. For compatibility, --loop-file and --loop-file=yes are also accepted, and are the same as --loop-file=inf.
+        /// The difference to --loop-playlist is that this doesn't loop the playlist, just the file itself. If the playlist contains only a single file, the difference between the two option is that this option performs a seek on loop, instead of reloading the file.
+        /// </summary>
+        public MpvOption<string?> LoopFile => _loopFile ??= new MpvOption<string?>(this, "loop-file");
+        private MpvOption<string?>? _loopFile;
+        /// <summary>
+        /// Set loop points. If playback passes the b timestamp, it will seek to the a timestamp. Seeking past the b point doesn't loop (this is intentional). If either options are set to no (or unset), looping is disabled.
+        /// </summary>
+        public MpvOption<string?> AbLoopA => _abLoopA ??= new MpvOption<string?>(this, "ab-loop-a");
+        private MpvOption<string?>? _abLoopA;
+        /// <summary>
+        /// Set loop points. If playback passes the b timestamp, it will seek to the a timestamp. Seeking past the b point doesn't loop (this is intentional). If either options are set to no (or unset), looping is disabled.
+        /// </summary>
+        public MpvOption<string?> AbLoopB => _abLoopB ??= new MpvOption<string?>(this, "ab-loop-b");
+        private MpvOption<string?>? _abLoopB;
+        /// <summary>
+        /// Enabled by default. Whether to use Matroska ordered chapters. mpv will not load or search for video segments from other files, and will also ignore any chapter order specified for the main file.
+        /// </summary>
+        public MpvOption<bool?> OrderedChapters => _orderedChapters ??= new MpvOption<bool?>(this, "ordered-chapters");
+        private MpvOption<bool?>? _orderedChapters;
     }
 }

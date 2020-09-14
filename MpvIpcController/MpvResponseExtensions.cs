@@ -73,7 +73,12 @@ namespace HanumanInstitute.MpvIpcController
 
             if (typeof(T) == typeof(string))
             {
-                return (T)(object)data;
+                var str = data.ToString();
+                if (str.Length >= 2 && str[0] == '"' && str[str.Length - 1] == '"')
+                {
+                    str = str.Substring(1, str.Length - 2);
+                }
+                return (T)(object)str;
             }
             if (typeof(T).IsValueType)
             {
