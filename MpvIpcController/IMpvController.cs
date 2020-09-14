@@ -11,9 +11,24 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         event EventHandler<MpvMessageEventArgs>? EventReceived;
         /// <summary>
-        /// Gets or sets the timeout in milliseconds to wait for a message response.
+        /// Gets or sets the default options for all requests passing through this controller.
         /// </summary>
-        int ResponseTimeout { get; set; }
+        ApiOptions DefaultOptions { get; }
+        /// <summary>
+        /// Gets whether to wait for response, first taking the value in options, if null taking the value in DefaultOptions, and if null taking a default value.
+        /// </summary>
+        /// <param name="options">Optional command options, may be null.</param>
+        bool GetWaitForResponse(ApiOptions? options);
+        /// <summary>
+        /// Gets the response timeout, first taking the value in options, if null taking the value in DefaultOptions, and if null taking a default value.
+        /// </summary>
+        /// <param name="options">Optional command options, may be null.</param>
+        int GetResponseTimeout(ApiOptions? options);
+        /// <summary>
+        /// Gets whether to throw an exception on error, first taking the value in options, if null taking the value in DefaultOptions, and if null taking a default value.
+        /// </summary>
+        /// <param name="options">Optional command options, may be null.</param>
+        bool GetThrowOnError(ApiOptions? options);
         /// <summary>
         /// Gets or sets whether to keep a log of communication data.
         /// </summary>

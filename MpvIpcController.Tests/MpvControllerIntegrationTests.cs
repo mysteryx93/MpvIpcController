@@ -53,7 +53,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         {
             using var app = await TestIntegrationSetup.CreateAsync();
             app.Controller.LogEnabled = true;
-            app.Controller.ResponseTimeout = 5000;
+            app.Controller.DefaultOptions.ResponseTimeout = 5000;
             const int Concurrent = 20;
             var requests = new int[Concurrent];
             for (var i = 0; i < Concurrent; i++)

@@ -32,6 +32,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
             var factory = new MpvApiFactory();
             Api = await factory.StartAsync(MpvPath, $"mpvtest{_pipeId++}");
             Api.Controller.LogEnabled = true;
+            Api.Controller.DefaultOptions.ThrowOnError = true;
         }
 
         public async Task LogAndQuitAsync(ITestOutputHelper? output)

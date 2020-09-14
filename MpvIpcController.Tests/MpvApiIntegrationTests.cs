@@ -151,14 +151,14 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task Z_RunCommand_ReturnsValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
+            app.Controller.DefaultOptions.ResponseTimeout = -1;
 
             try
             {
-                app.Controller.ResponseTimeout = -1;
                 await app.Api.LoadFileAsync(app.SampleClip);
                 await Task.Delay(100);
-                await app.Api.OrderedChapters.SetAsync(false, options: new ApiOptions() { ThrowOnError = true });
-                var result = await app.Api.OrderedChapters.GetAsync(options: new ApiOptions() { ThrowOnError = true });
+                await app.Api.OrderedChapters.SetAsync(false);
+                var result = await app.Api.OrderedChapters.GetAsync();
 
                 Assert.NotNull(result);
             }

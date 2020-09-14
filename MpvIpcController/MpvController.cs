@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.XPath;
 using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
@@ -25,11 +24,42 @@ namespace HanumanInstitute.MpvIpcController
         private int _requestId = 1;
         private readonly List<MpvResponse> _responses = new List<MpvResponse>();
         private readonly ManualResetEvent _waitResponse = new ManualResetEvent(true);
-        private int _responseTimeout = 3000;
+        // private int _responseTimeout = 3000;
         private bool _logEnabled;
         private readonly object _lockLogEnabled = new object();
         private readonly SemaphoreSlim _semaphoreSendMessage = new SemaphoreSlim(1, 1);
         private readonly PipeStreamListener _listener;
+        private const bool DefaultWaitForResponse = true;
+        private const int DefaultResponseTimeout = 3000;
+        private const bool DefaultThrowOnError = false;
+
+        /// <summary>
+        /// Gets or sets the default options for all requests passing through this controller.
+        /// </summary>
+        public ApiOptions DefaultOptions { get; } = new ApiOptions()
+        {
+            WaitForResponse = DefaultWaitForResponse,
+            ResponseTimeout = DefaultResponseTimeout,
+            ThrowOnError = DefaultThrowOnError
+        };
+
+        /// <summary>
+        /// Gets whether to wait for response, first taking the value in options, if null taking the value in DefaultOptions, and if null taking a default value.
+        /// </summary>
+        /// <param name="options">Optional command options, may be null.</param>
+        public bool GetWaitForResponse(ApiOptions? options) => options?.WaitForResponse ?? DefaultOptions.WaitForResponse ?? DefaultWaitForResponse;
+
+        /// <summary>
+        /// Gets the response timeout, first taking the value in options, if null taking the value in DefaultOptions, and if null taking a default value.
+        /// </summary>
+        /// <param name="options">Optional command options, may be null.</param>
+        public int GetResponseTimeout(ApiOptions? options) => options?.ResponseTimeout ?? DefaultOptions.ResponseTimeout ?? DefaultResponseTimeout;
+
+        /// <summary>
+        /// Gets whether to throw an exception on error, first taking the value in options, if null taking the value in DefaultOptions, and if null taking a default value.
+        /// </summary>
+        /// <param name="options">Optional command options, may be null.</param>
+        public bool GetThrowOnError(ApiOptions? options) => options?.ThrowOnError ?? DefaultOptions.ThrowOnError ?? DefaultThrowOnError;
 
         /// <summary>
         /// Gets a text log of communication data from both directions.
@@ -55,15 +85,6 @@ namespace HanumanInstitute.MpvIpcController
 
             _listener = new PipeStreamListener(connection, MessageReceived);
             _listener.Start();
-        }
-
-        /// <summary>
-        /// Gets or sets the timeout in milliseconds to wait for a message response.
-        /// </summary>
-        public int ResponseTimeout
-        {
-            get => _responseTimeout;
-            set => _responseTimeout = value >= 0 ? value : -1;
         }
 
         /// <summary>
@@ -149,7 +170,7 @@ namespace HanumanInstitute.MpvIpcController
 
             // Append prefixes and remove null values at the end.
             var cmdLength = cmd.Length;
-            var prefixes = options?.GetPrefixes();
+            var prefixes = options != null ? options.GetPrefixes() : DefaultOptions.GetPrefixes();
             var prefixCount = prefixes?.Count ?? 0;
             for (var i = cmd.Length - 1; i >= 0; i--)
             {
@@ -213,7 +234,7 @@ namespace HanumanInstitute.MpvIpcController
             var request = new MpvRequest()
             {
                 Command = cmd,
-                RequestId = (options == null || options.WaitForResponse) ? (int?)_requestId++ : null
+                RequestId = GetWaitForResponse(options) ? (int?)_requestId++ : null
             };
             var jsonOptions = new JsonSerializerOptions()
             {
@@ -255,14 +276,14 @@ namespace HanumanInstitute.MpvIpcController
             var watch = new Stopwatch();
             watch.Start();
             var response = FindResponse(requestId);
-            var maxTimeout = options?.ResponseTimeout ?? ResponseTimeout;
+            var maxTimeout = GetResponseTimeout(options);
             while (response == null && (maxTimeout < 0 || watch.ElapsedMilliseconds < maxTimeout) && cancelToken?.IsCancellationRequested != true)
             {
                 // Calculate wait timeout.
-                var timeout = 1000;
-                if (ResponseTimeout > -1)
+                var timeout = -1;
+                if (maxTimeout > -1)
                 {
-                    timeout = (int)(ResponseTimeout - watch.ElapsedMilliseconds);
+                    timeout = (int)(maxTimeout - watch.ElapsedMilliseconds);
                     timeout = timeout < 0 ? 0 : timeout > 1000 ? 1000 : timeout;
                 }
 
@@ -286,7 +307,7 @@ namespace HanumanInstitute.MpvIpcController
                 }
             }
 
-            if (options?.ThrowOnError == true && !response.Success)
+            if (GetThrowOnError(options) && !response.Success)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Command '{0}' returned status '{1}'.", commandName, response.Error));
             }

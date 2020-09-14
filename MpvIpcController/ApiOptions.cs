@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml.XPath;
 
 namespace HanumanInstitute.MpvIpcController
 {
@@ -10,19 +9,19 @@ namespace HanumanInstitute.MpvIpcController
     public class ApiOptions
     {
         /// <summary>
-        /// Gets or sets whether to wait for server response when sending the command.
+        /// Gets or sets whether to wait for server response when sending the command. If null, takes the default value configured on the controller.
         /// </summary>
-        public bool WaitForResponse { get; set; } = true;
+        public bool? WaitForResponse { get; set; }
 
         /// <summary>
-        /// Gets or sets the response timeout. If null, takes the default value configured for the controller.
+        /// Gets or sets the response timeout. If null, takes the default value configured on the controller.
         /// </summary>
         public int? ResponseTimeout { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to throw an exception when the response contains an error.
+        /// Gets or sets whether to throw an exception when the response contains an error. If null, takes the default value configured on the controller.
         /// </summary>
-        public bool ThrowOnError { get; set; }
+        public bool? ThrowOnError { get; set; }
 
         /// <summary>
         /// When set, use the default behavior for this command. This is the default for input.conf commands. Some libmpv/scripting/IPC APIs do not use this as default, but use no-osd instead.

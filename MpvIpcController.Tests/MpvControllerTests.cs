@@ -143,7 +143,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task SendMessage_TimeoutNegative_DoesNotTimeout()
         {
             using var app = TestSetup.Create();
-            app.Controller.ResponseTimeout = -1;
+            app.Controller.DefaultOptions.ResponseTimeout = -1;
 
             var requestTask = app.Controller.SendMessageAsync(null, CommandName);
             await Task.Delay(50);
@@ -155,7 +155,7 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task SendMessage_TimeoutZero_ThrowsException()
         {
             using var app = TestSetup.Create();
-            app.Controller.ResponseTimeout = 0;
+            app.Controller.DefaultOptions.ResponseTimeout = 0;
 
             async Task Act()
             {
