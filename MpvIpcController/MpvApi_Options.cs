@@ -4,6 +4,18 @@ namespace HanumanInstitute.MpvIpcController
 {
     public partial class MpvApi
     {
+        ///// <summary>
+        ///// Specify a list of audio filters to apply to the audio stream. See AUDIO FILTERS for details and descriptions of the available filters.
+        ///// </summary>
+        //public MpvOptionList AudioFilter => _audioFilter ??= new MpvOptionList(this, "af");
+        //private MpvOptionList? _audioFilter;
+        ///// <summary>
+        ///// Specify a list of video filters to apply to the video stream. See VIDEO FILTERS for details and descriptions of the available filters.
+        ///// </summary>
+        //public MpvOptionList VideoFilter => _videoFilter ??= new MpvOptionList(this, "vf");
+        //private MpvOptionList? _videoFilter;
+
+
         /// <summary>
         /// Specify a priority list of audio languages to use. Different container formats employ different language codes. DVDs use ISO 639-1 two-letter language codes, Matroska, MPEG-TS and NUT use ISO 639-2 three-letter language codes, while OGM uses a free-form identifier. See also --aid.
         /// </summary>
@@ -44,18 +56,6 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvOption<bool?> TrackAutoSelection => _trackAutoSelection ??= new MpvOption<bool?>(this, "track-auto-selection");
         private MpvOption<bool?>? _trackAutoSelection;
-
-        ///// <summary>
-        ///// Specify a list of audio filters to apply to the audio stream. See AUDIO FILTERS for details and descriptions of the available filters.
-        ///// </summary>
-        //public MpvOptionList AudioFilter => _audioFilter ??= new MpvOptionList(this, "af");
-        //private MpvOptionList? _audioFilter;
-        ///// <summary>
-        ///// Specify a list of video filters to apply to the video stream. See VIDEO FILTERS for details and descriptions of the available filters.
-        ///// </summary>
-        //public MpvOptionList VideoFilter => _videoFilter ??= new MpvOptionList(this, "vf");
-        //private MpvOptionList? _videoFilter;
-
         /// <summary>
         /// Seek to given time position.
         /// The general format for times is [+|-] [[hh:] mm:]ss[.ms]. If the time is prefixed with -, the time is considered relative from the end of the file(as signaled by the demuxer/the file). A + is usually ignored(but see below).
