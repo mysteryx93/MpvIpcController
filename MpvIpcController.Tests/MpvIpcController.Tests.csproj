@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\HanumanInstitute.Validators\Validators\HanumanInstitute.Validators.csproj" />
     <ProjectReference Include="..\MpvIpcController\MpvIpcController.csproj" />
   </ItemGroup>
 
