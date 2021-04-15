@@ -309,7 +309,7 @@ namespace HanumanInstitute.MpvIpcController
         private MpvPropertyRead<bool?>? _demuxerCacheIdle;
 
         /// <summary>
-        /// Various undocumented or half-documented things.
+        /// Returns information about the demuxer cache.
         /// </summary>
         public MpvPropertyRead<DemuxerCacheState?> DemuxerCacheState => _demuxerCacheState ??= new MpvPropertyRead<DemuxerCacheState?>(this, "demuxer-cache-state");
         private MpvPropertyRead<DemuxerCacheState?>? _demuxerCacheState;
@@ -469,25 +469,25 @@ namespace HanumanInstitute.MpvIpcController
         private VideoProperties? _videoOutParams;
 
         /// <summary>
-        /// Approximate information of the current frame.
+        /// The type of the picture. It can be "I" (intra), "P" (predicted), "B" (bi-dir predicted) or unavailable.
         /// </summary>
         public MpvPropertyRead<string?> VideoFramePictureType => _videoFramePictureType ??= new MpvPropertyRead<string?>(this, "video-frame-info/picture-type");
         private MpvPropertyRead<string?>? _videoFramePictureType;
 
         /// <summary>
-        /// Approximate information of the current frame.
+        /// Whether the content of the frame is interlaced.
         /// </summary>
         public MpvPropertyRead<bool?> VideoFrameInterlaced => _videoFrameInterlaced ??= new MpvPropertyRead<bool?>(this, "video-frame-info/interlaced");
         private MpvPropertyRead<bool?>? _videoFrameInterlaced;
 
         /// <summary>
-        /// Approximate information of the current frame.
+        /// If the content is interlaced, whether the top field is displayed first.
         /// </summary>
         public MpvPropertyRead<bool?> VideoFrameTff => _videoFrameTff ??= new MpvPropertyRead<bool?>(this, "video-frame-info/tff");
         private MpvPropertyRead<bool?>? _videoFrameTff;
 
         /// <summary>
-        /// Approximate information of the current frame.
+        /// Whether the frame must be delayed when decoding.
         /// </summary>
         public MpvPropertyRead<bool?> VideoFrameRepeat => _videoFrameRepeat ??= new MpvPropertyRead<bool?>(this, "video-frame-info/repeat");
         private MpvPropertyRead<bool?>? _videoFrameRepeat;
@@ -509,6 +509,18 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvPropertyWrite<float?> WindowScale => _windowScale ??= new MpvPropertyWrite<float?>(this, "window-scale");
         private MpvPropertyWrite<float?>? _windowScale;
+
+        /// <summary>
+        /// The window-scale value calculated from the current window size. This has the same value as ``window-scale`` if the window size was not changed since setting the option, and the window size was not restricted in other ways.The property is unavailable if no video is active.
+        /// </summary>
+        public MpvPropertyWrite<float?> CurrentWindowScale => _currentWindowScale ??= new MpvPropertyWrite<float?>(this, "current-window-scale");
+        private MpvPropertyWrite<float?>? _currentWindowScale;
+
+        /// <summary>
+        /// Whether the window has focus. Currently works only on X11 and Wayland.
+        /// </summary>
+        public MpvPropertyRead<bool?> Focused => _focused ??= new MpvPropertyRead<bool?>(this, "focused");
+        private MpvPropertyRead<bool?>? _focused;
 
         /// <summary>
         /// Names of the displays that the mpv window covers. On X11, these are the xrandr names (LVDS1, HDMI1, DP1, VGA1, etc.). On Windows, these are the GDI names (\.DISPLAY1, \.DISPLAY2, etc.) and the first display in the list will be the one that Windows considers associated with the window (as determined by the MonitorFromWindow API.) On macOS these are the Display Product Names as used in the System Information and only one display name is returned since a window can only be on one screen.
@@ -587,6 +599,24 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvPropertyRead<int?> OsdMarginRight => _osdMarginRight ??= new MpvPropertyRead<int?>(this, "osd-dimensions/mr");
         private MpvPropertyRead<int?>? _osdMarginRight;
+
+        /// <summary>
+        /// Last known mouse X position, normalizd to OSD dimensions.
+        /// </summary>
+        public MpvPropertyRead<int?> MousePosX => _mousePosX ??= new MpvPropertyRead<int?>(this, "mouse-pos/x");
+        private MpvPropertyRead<int?>? _mousePosX;
+
+        /// <summary>
+        /// Last known mouse Y position, normalizd to OSD dimensions.
+        /// </summary>
+        public MpvPropertyRead<int?> MousePosY => _mousePosY ??= new MpvPropertyRead<int?>(this, "mouse-pos/y");
+        private MpvPropertyRead<int?>? _mousePosY;
+
+        /// <summary>
+        /// Whether the mouse pointer hovers the video window. The coordinates should be ignored when this value is false, because the video backends update them only when the pointer hovers the window.
+        /// </summary>
+        public MpvPropertyRead<bool?> MousePosHover => _mousePosHover ??= new MpvPropertyRead<bool?>(this, "mouse-pos/hover");
+        private MpvPropertyRead<bool?>? _mousePosHover;
 
         /// <summary>
         /// Return the current subtitle text regardless of sub visibility. Formatting is stripped. If the subtitle is not text-based (i.e. DVD/BD subtitles), an empty string is returned.
@@ -714,6 +744,12 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvPropertyIndexRead<int, bool?> TrackListIsSelected => _trackListIsSelected ??= new MpvPropertyIndexRead<int, bool?>(this, "track-list/{0}/selected");
         private MpvPropertyIndexRead<int, bool?>? _trackListIsSelected;
+
+        /// <summary>
+        /// It indicates the selection order of tracks for the same type. If a track is not selected, or is selected by the --lavfi-complex, it is not available.For subtitle tracks, 0 represents the sid, and 1 represents the secondary-sid.
+        /// </summary>
+        public MpvPropertyIndexRead<int, int?> TrackListMainSelection => _trackListMainSelection ??= new MpvPropertyIndexRead<int, int?>(this, "track-list/{0}/main-selection");
+        private MpvPropertyIndexRead<int, int?>? _trackListMainSelection;
 
         /// <summary>
         /// The stream index as usually used by the FFmpeg utilities. Note that this can be potentially wrong if a demuxer other than libavformat (--demuxer=lavf) is used. For mkv files, the index will usually match even if the default (builtin) demuxer is used, but there is no hard guarantee.

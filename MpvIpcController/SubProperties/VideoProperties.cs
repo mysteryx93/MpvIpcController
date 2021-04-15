@@ -23,6 +23,12 @@ namespace HanumanInstitute.MpvIpcController
         private MpvPropertyRead<string?>? _pixelFormat;
 
         /// <summary>
+        /// The underlying pixel format as string. This is relevant for some cases of hardware decoding and unavailable otherwise.
+        /// </summary>
+        public MpvPropertyRead<string?> PixelFormatHardware => _pixelFormatHardware ??= new MpvPropertyRead<string?>(_api, _prefix + "/hw-pixelformat");
+        private MpvPropertyRead<string?>? _pixelFormatHardware;
+
+        /// <summary>
         /// Average bits-per-pixel as integer. Subsampled planar formats use a different resolution, which is the reason this value can sometimes be odd or confusing. Can be unavailable with some formats.
         /// </summary>
         public MpvPropertyRead<int?> AverageBitPerPixel => _averageBitPerPixel ??= new MpvPropertyRead<int?>(_api, _prefix + "/average-bpp");

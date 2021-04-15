@@ -551,6 +551,15 @@ namespace HanumanInstitute.MpvIpcController
         }
 
         /// <summary>
+        /// Delete any existing resume config file that was written by 'quit-watch-later' or 'write-watch-later-config'.
+        /// </summary>
+        /// <param name="fileName">If specified, then the deleted config is for that file; otherwise, it is the same one as would be written by 'quit-watch-later' or 'write-watch-later-config' in the current circumstance.</param>
+        public async Task DeleteWatchLaterConfigAsync(string? fileName = null, ApiOptions? options = null)
+        {
+            await _mpv.SendMessageAsync(options, "delete-watch-later-config", fileName).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Stops playback and clear playlist. With default settings, this is essentially like quit. Useful for the client API: playback can be stopped without terminating the player.
         /// </summary>
         public async Task StopAsync(ApiOptions? options = null)
@@ -656,12 +665,13 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="option">Video loading options.</param>
         /// <param name="title">The track title in the UI.</param>
         /// <param name="lang">The track language. It can influence stream selection when using LoadOption.Auto.</param>
-        public async Task VideoAddAsync(string path, LoadOption option = LoadOption.Select, string? title = null, string? lang = null, ApiOptions? options = null)
+        /// <param name="albumArt">Tells mpv to load the given video as album art.</param>
+        public async Task VideoAddAsync(string path, LoadOption option = LoadOption.Select, string? title = null, string? lang = null, string? albumArt = null, ApiOptions? options = null)
         {
             path.CheckNotNullOrEmpty(nameof(path));
             option.CheckEnumValid(nameof(option));
 
-            await _mpv.SendMessageAsync(options, "video-add", path, option.FormatMpvFlag(), title, lang).ConfigureAwait(false);
+            await _mpv.SendMessageAsync(options, "video-add", path, option.FormatMpvFlag(), title, lang, albumArt).ConfigureAwait(false);
         }
 
         /// <summary>

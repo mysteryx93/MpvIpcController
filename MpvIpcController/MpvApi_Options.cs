@@ -85,7 +85,7 @@ namespace HanumanInstitute.MpvIpcController
         private MpvOption<bool?>? _rebaseStartTime;
         /// <summary>
         /// Slow down or speed up playback by the factor given as parameter.
-        /// If --audio-pitch-correction(on by default) is used, playing with a speed higher than normal automatically inserts the scaletempo audio filter.
+        /// If --audio-pitch-correction(on by default) is used, playing with a speed higher than normal automatically inserts the scaletempo2 audio filter.
         /// </summary>
         public MpvOption<float?> Speed => _speed ??= new MpvOption<float?>(this, "speed");
         private MpvOption<float?>? _speed;
