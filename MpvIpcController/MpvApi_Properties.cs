@@ -295,14 +295,14 @@ namespace HanumanInstitute.MpvIpcController
         public MpvPropertyRead<bool> MixerActive => new(this, "mixer-active");
 
         /// <summary>
-        /// System volume. This property is available only if mpv audio output is currently active, and only if the underlying implementation supports volume control. What this option does depends on the API. For example, on ALSA this usually changes system-wide audio, while with PulseAudio this controls per-application volume.
+        /// System volume (0-100). This property is available only if mpv audio output is currently active, and only if the underlying implementation supports volume control. What this option does depends on the API. For example, on ALSA this usually changes system-wide audio, while with PulseAudio this controls per-application volume.
         /// </summary>
-        public MpvPropertyWrite<double> AudioVolume => new(this, "ao-volume");
+        public MpvPropertyWrite<double> AoVolume => new(this, "ao-volume");
 
         /// <summary>
         /// Similar to AoVolume, but controls the mute state. May be unimplemented even if AoVolume works.
         /// </summary>
-        public MpvPropertyWrite<double> AudioMute => new(this, "ao-mute");
+        public MpvPropertyWrite<double> AoMute => new(this, "ao-mute");
 
         /// <summary>
         /// Audio codec selected for decoding.

@@ -73,7 +73,7 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
 
             try
             {
-                var result = await app.Api.AudioVolume.GetAsync();
+                var result = await app.Api.Volume.GetAsync();
 
                 Assert.True(result > 0);
             }
@@ -88,13 +88,13 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         public async Task SetAsync_AudioVolume_HasNewValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = .5;
+            var volume = 100;
 
             try
             {
-                await app.Api.AudioVolume.SetAsync(volume);
+                await app.Api.Volume.SetAsync(volume);
 
-                var result = await app.Api.AudioVolume.GetAsync();
+                var result = await app.Api.Volume.GetAsync();
                 Assert.Equal(volume, result);
             }
             finally
@@ -107,15 +107,15 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         public async Task AddAsync_AudioVolume_HasAddedValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = .5;
-            var volumeAdd = .1;
-            await app.Api.AudioVolume.SetAsync(volume);
+            var volume = 50;
+            var volumeAdd = 10;
+            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.AudioVolume.AddAsync(volumeAdd);
+                await app.Api.Volume.AddAsync(volumeAdd);
 
-                var result = await app.Api.AudioVolume.GetAsync();
+                var result = await app.Api.Volume.GetAsync();
                 Assert.Equal(volume + volumeAdd, result);
             }
             finally
@@ -128,16 +128,16 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         public async Task MultiplyAsync_AudioVolume_HasMultipliedValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = .5;
+            var volume = 50;
             var volumeMul = 1.1;
-            await app.Api.AudioVolume.SetAsync(volume);
+            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.AudioVolume.MultiplyAsync(volumeMul);
+                await app.Api.Volume.MultiplyAsync(volumeMul);
 
-                var result = await app.Api.AudioVolume.GetAsync();
-                Assert.Equal(volume * volumeMul, result);
+                var result = await app.Api.Volume.GetAsync();
+                Assert.Equal((int)(volume * volumeMul), result);
             }
             finally
             {
@@ -149,14 +149,14 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         public async Task CycleAsync_AudioVolumeUp_HasGreaterValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = .5;
-            await app.Api.AudioVolume.SetAsync(volume);
+            var volume = 50;
+            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.AudioVolume.CycleAsync();
+                await app.Api.Volume.CycleAsync();
 
-                var result = await app.Api.AudioVolume.GetAsync();
+                var result = await app.Api.Volume.GetAsync();
                 Assert.True(result > volume);
             }
             finally
@@ -169,14 +169,14 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         public async Task CycleAsync_AudioVolumeDown_HasLowerValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = .5;
-            await app.Api.AudioVolume.SetAsync(volume);
+            var volume = 50;
+            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.AudioVolume.CycleAsync(CycleDirection.Down);
+                await app.Api.Volume.CycleAsync(CycleDirection.Down);
 
-                var result = await app.Api.AudioVolume.GetAsync();
+                var result = await app.Api.Volume.GetAsync();
                 Assert.True(result < volume);
             }
             finally

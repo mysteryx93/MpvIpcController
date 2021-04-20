@@ -241,7 +241,7 @@ namespace HanumanInstitute.MpvIpcController
             name.CheckNotNullOrEmpty(nameof(name));
             direction.CheckEnumValid(nameof(direction));
 
-            await _mpv.SendMessageAsync(options, "cycle", name, direction).ConfigureAwait(false);
+            await _mpv.SendMessageAsync(options, "cycle", name, direction.ToStringInvariant().ToLowerInvariant()).ConfigureAwait(false);
         }
 
         /// <summary>

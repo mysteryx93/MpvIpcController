@@ -441,6 +441,6 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         public MpvOptionRef<string> PlayerOperationMode => new(this, "player-operation-mode");
 
-
+        public MpvOption<double> Volume => new(this, "volume");
     }
 }

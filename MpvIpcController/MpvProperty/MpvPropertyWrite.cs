@@ -30,7 +30,7 @@ namespace HanumanInstitute.MpvIpcController
         /// Similar to add, but multiplies the property or option with the numeric value.
         /// </summary>
         /// <param name="value">The multiplication factor.</param>
-        public Task MultiplyAsync(T value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, FormatValue(value), options);
+        public Task MultiplyAsync(double value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, value, options);
 
         /// <summary>
         /// Cycles the given property or option. The second argument can be up or down to set the cycle direction. On overflow, set the property back to the minimum, on underflow set it to the maximum.
