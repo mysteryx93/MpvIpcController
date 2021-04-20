@@ -53,7 +53,6 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         /// <param name="pipeName">The IPC pipe name to connect to.</param>
         /// <returns>A connected MpvController.</returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed: Connection closure is handled by MpvController.")]
         public async Task<MpvApi> ConnectAsync(string pipeName)
         {
             var connection = new NamedPipeClientStream(_serverName, pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);

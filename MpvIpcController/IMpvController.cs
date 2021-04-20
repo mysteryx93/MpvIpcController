@@ -48,7 +48,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        Task<MpvResponse<T>?> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd);
+        Task<MpvResponse<T>> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd);
         /// <summary>
         /// Sends specified message to MPV and returns the response as string.
         /// </summary>
@@ -59,7 +59,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        Task<MpvResponse?> SendMessageAsync(ApiOptions? options, params object?[] cmd);
+        Task<MpvResponse> SendMessageAsync(ApiOptions? options, params object?[] cmd);
         /// <summary>
         /// Sends specified message to MPV and returns a value of specified type.
         /// </summary>
@@ -72,7 +72,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        Task<MpvResponse<T>?> SendMessageNamedAsync<T>(ApiOptions? options, object cmd, string commandName);
+        Task<MpvResponse<T>> SendMessageNamedAsync<T>(ApiOptions? options, object cmd, string commandName);
         /// <summary>
         /// Sends specified message to MPV and returns the response as string.
         /// </summary>
@@ -84,6 +84,6 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        Task<MpvResponse?> SendMessageNamedAsync(ApiOptions? options, object cmd, string commandName);
+        Task<MpvResponse> SendMessageNamedAsync(ApiOptions? options, object cmd, string commandName);
     }
 }

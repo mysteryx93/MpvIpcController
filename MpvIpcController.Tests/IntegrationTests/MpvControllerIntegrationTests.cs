@@ -5,7 +5,7 @@ using HanumanInstitute.Validators;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace HanumanInstitute.MpvIpcController.Tests
+namespace HanumanInstitute.MpvIpcController.IntegrationTests
 {
     public class MpvControllerIntegrationTests
     {

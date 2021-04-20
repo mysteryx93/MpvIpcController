@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
@@ -148,7 +146,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        public async Task<MpvResponse<T>?> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd)
+        public async Task<MpvResponse<T>> SendMessageAsync<T>(ApiOptions? options, params object?[] cmd)
         {
             var result = await SendMessageAsync(options, cmd).ConfigureAwait(false);
             return result.Parse<T>();
@@ -164,7 +162,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        public async Task<MpvResponse?> SendMessageAsync(ApiOptions? options, params object?[] cmd)
+        public async Task<MpvResponse> SendMessageAsync(ApiOptions? options, params object?[] cmd)
         {
             cmd.CheckNotNullOrEmpty(nameof(cmd));
 
@@ -209,7 +207,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        public async Task<MpvResponse<T>?> SendMessageNamedAsync<T>(ApiOptions? options, object cmd, string commandName)
+        public async Task<MpvResponse<T>> SendMessageNamedAsync<T>(ApiOptions? options, object cmd, string commandName)
         {
             var result = await SendMessageNamedAsync(options, cmd, commandName).ConfigureAwait(false);
             return result.Parse<T>();
@@ -226,7 +224,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <exception cref="TimeoutException">A response from MPV was not received before timeout.</exception>
         /// <exception cref="FormatException">The data returned by the server could not be parsed.</exception>
         /// <exception cref="ObjectDisposedException">The underlying connection was disposed.</exception>
-        public async Task<MpvResponse?> SendMessageNamedAsync(ApiOptions? options, object cmd, string commandName)
+        public async Task<MpvResponse> SendMessageNamedAsync(ApiOptions? options, object cmd, string commandName)
         {
             cmd.CheckNotNull(nameof(cmd));
 
@@ -258,7 +256,7 @@ namespace HanumanInstitute.MpvIpcController
 
             if (!request.RequestId.HasValue)
             {
-                return null;
+                return new MpvResponse();
             }
 
             return await WaitForResponseAsync(request.RequestId!.Value, commandName, options).ConfigureAwait(false);
@@ -357,7 +355,7 @@ namespace HanumanInstitute.MpvIpcController
                 // ex: { "event": "event_name" }
                 var response = new MpvEvent()
                 {
-                    Event = eventName.GetString()
+                    Event = eventName.GetString() ?? string.Empty
                 };
                 // Parse additional event args.
                 foreach (var item in reader.RootElement.EnumerateObject())
@@ -379,7 +377,7 @@ namespace HanumanInstitute.MpvIpcController
                 };
                 if (reader.RootElement.TryGetProperty("error", out var error))
                 {
-                    response.Error = error.GetString();
+                    response.Error = error.GetString() ?? string.Empty;
                 }
                 if (reader.RootElement.TryGetProperty("data", out var data))
                 {

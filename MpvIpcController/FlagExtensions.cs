@@ -23,7 +23,7 @@ namespace HanumanInstitute.MpvIpcController
                     return item;
                 }
             }
-            return null;
+            return default!;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace HanumanInstitute.MpvIpcController
         public static string FormatMpvFlag<T>(this T flag)
             where T : Enum
         {
-            var value = flag.ToString();
+            var value = flag?.ToString();
             value = s_regexFlagName.Replace(value, x => $"{x.Value[0]}-{x.Value[1]}");
             return value.ToLowerInvariant();
         }

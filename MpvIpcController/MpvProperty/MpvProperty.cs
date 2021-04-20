@@ -1,15 +1,16 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Globalization;
+using System.Text.Json;
 using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {
     /// <summary>
-    /// The base class of MPV properties.
+    /// Represents a read-only MPV property.
     /// </summary>
     /// <typeparam name="T">The return type of the property.</typeparam>
-    /// <typeparam name="TApi">The API data type before parsing.</typeparam>
-    public abstract class MpvProperty<T>
+    /// /// <typeparam name="T">The nullable return type of the property.</typeparam>
+    public abstract class MpvProperty<TNull>
     {
         protected MpvApi Api { get; private set; }
 
@@ -25,17 +26,48 @@ namespace HanumanInstitute.MpvIpcController
         public string PropertyName { get; private set; }
 
         /// <summary>
-        /// Watches a property for changes. If the given property is changed, then an event 'property-change' will be generated.
+        /// Parse value as specified type.
         /// </summary>
-        /// <param name="observeId">An ID that will be passed to the generated events as parameter 'id'.</param>
-        public Task ObserveAsync(int observeId, ApiOptions? options = null) =>
-            Api.ObservePropertyAsync(observeId, PropertyName, options);
+        /// <param name="value">The raw value to parse.</param>
+        /// <returns>The typed parsed value.</returns>
+        /// <exception cref="FormatException">Value is not in a valid format.</exception>
+        /// <exception cref="OverflowException">Value represents a number that is out of the range.</exception>
+        protected virtual TNull ParseValue(string? value) => ParseDefault(value);
+
+
+        public static TNull ParseDefault(string? value)
+        {
+            if (value == null) { return default!; }
+
+            if (typeof(TNull) == typeof(string))
+            {
+                var str = value.ToString();
+                if (str.Length >= 2 && str[0] == '"' && str[str.Length - 1] == '"')
+                {
+                    str = str.Substring(1, str.Length - 2);
+                }
+                return (TNull)(object)str;
+            }
+            if (typeof(TNull).IsValueType)
+            {
+                var type = Nullable.GetUnderlyingType(typeof(TNull)) ?? typeof(TNull);
+                return (TNull)Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                var jsonOptions = new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = new MpvJsonNamingPolicy()
+                };
+                return (TNull)JsonSerializer.Deserialize<TNull>(value, jsonOptions)! ?? default!;
+            }
+        }
 
         /// <summary>
-        /// Undo ObserveProperty or ObservePropertyString. This requires the numeric id passed to the observed command as argument.
+        /// Formats specified value to send into a MPV request.
         /// </summary>
-        /// <param name="observeId">The ID of the observer.</param>
-        public Task UnobservePropertyAsync(int observeId, ApiOptions? options = null) =>
-            Api.UnobservePropertyAsync(observeId, options);
+        /// <param name="value">The value to format.</param>
+        /// <returns>The formatted value.</returns>
+        protected virtual string? FormatValue(TNull value) => value?.ToStringInvariant();
     }
 }

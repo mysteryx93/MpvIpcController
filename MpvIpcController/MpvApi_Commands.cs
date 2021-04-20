@@ -14,7 +14,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public Task<MpvResponse<T>?> Run<T>(ApiOptions? options, params object?[] cmd) => _mpv.SendMessageAsync<T>(options, cmd);
+        public Task<MpvResponse<T>> Run<T>(ApiOptions? options, params object?[] cmd) => _mpv.SendMessageAsync<T>(options, cmd);
 
         /// <summary>
         /// Sends specified message to MPV and returns the response as string.
@@ -22,12 +22,12 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="options">Additional command options.</param>
         /// <param name="cmd">The command values to send.</param>
         /// <returns>The server's response to the command.</returns>
-        public Task<MpvResponse?> Run(ApiOptions? options, params object?[] cmd) => _mpv.SendMessageAsync(options, cmd);
+        public Task<MpvResponse> Run(ApiOptions? options, params object?[] cmd) => _mpv.SendMessageAsync(options, cmd);
 
         /// <summary>
         /// Returns the name of the client as string. This is the string ipc-N with N being an integer number.
         /// </summary>
-        public async Task<MpvResponse<string?>?> GetClientNameAsync(ApiOptions? options = null)
+        public async Task<MpvResponse<string?>> GetClientNameAsync(ApiOptions? options = null)
         {
             return await _mpv.SendMessageAsync(options, "client_name").ConfigureAwait(false);
         }
@@ -35,7 +35,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Returns the current mpv internal time in microseconds as a number. This is basically the system time, with an arbitrary offset.
         /// </summary>
-        public async Task<MpvResponse<int?>?> GetClientTimeAsync(ApiOptions? options = null)
+        public async Task<MpvResponse<int?>> GetClientTimeAsync(ApiOptions? options = null)
         {
             return await _mpv.SendMessageAsync<int?>(options, "get_time_us").ConfigureAwait(false);
         }
@@ -44,7 +44,7 @@ namespace HanumanInstitute.MpvIpcController
         /// Returns the raw value of the given property.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
-        public async Task<MpvResponse?> GetPropertyAsync(string propertyName, ApiOptions? options = null)
+        public async Task<MpvResponse> GetPropertyAsync(string propertyName, ApiOptions? options = null)
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
@@ -55,7 +55,7 @@ namespace HanumanInstitute.MpvIpcController
         /// Returns the value of the given property as a nullable value type.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
-        public async Task<MpvResponse<T>?> GetPropertyAsync<T>(string propertyName, ApiOptions? options = null)
+        public async Task<MpvResponse<T>> GetPropertyAsync<T>(string propertyName, ApiOptions? options = null)
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
@@ -66,7 +66,7 @@ namespace HanumanInstitute.MpvIpcController
         /// Returns the value of the given property. The resulting data will always be a string.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
-        public async Task<MpvResponse<string?>?> GetPropertyStringAsync(string propertyName, ApiOptions? options = null)
+        public async Task<MpvResponse<string?>> GetPropertyStringAsync(string propertyName, ApiOptions? options = null)
         {
             propertyName.CheckNotNullOrEmpty(nameof(propertyName));
 
@@ -115,7 +115,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="observeId">The ID of the observer.</param>
         public async Task UnobservePropertyAsync(int observeId, ApiOptions? options = null)
         {
-            await _mpv.SendMessageAsync(options, "observe_property", observeId).ConfigureAwait(false);
+            await _mpv.SendMessageAsync(options, "unobserve_property", observeId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Returns the client API version the C API of the remote mpv instance provides.
         /// </summary>
-        public async Task<MpvResponse<int?>?> GetVersionAsync(ApiOptions? options = null)
+        public async Task<MpvResponse<int?>> GetVersionAsync(ApiOptions? options = null)
         {
             return await _mpv.SendMessageAsync<int?>(options, "get_version").ConfigureAwait(false);
         }
@@ -416,7 +416,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="captureStdOut">Capture all data the process outputs to stdout and return it once the process ends (optional, default: false).</param>
         /// <param name="captureStdErr">Capture all data the process outputs to stderr and return it once the process ends (optional, default: false).</param>
         /// <returns>Process data of type SubProcessResponse.</returns>
-        public async Task<MpvResponse<SubProcessResponse?>?> SubProcessAsync(string command, IEnumerable<string>? args = null, bool? playbackOnly = null, int? captureSize = null, bool? captureStdOut = null, bool? captureStdErr = null, ApiOptions? options = null)
+        public async Task<MpvResponse<SubProcessResponse?>> SubProcessAsync(string command, IEnumerable<string>? args = null, bool? playbackOnly = null, int? captureSize = null, bool? captureStdOut = null, bool? captureStdErr = null, ApiOptions? options = null)
         {
             command.CheckNotNullOrEmpty(nameof(command));
 

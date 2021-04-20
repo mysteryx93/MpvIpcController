@@ -3,8 +3,17 @@
 namespace HanumanInstitute.MpvIpcController
 {
     public class MpvOption<T> : MpvPropertyWrite<T>
+        where T : struct
     {
-        public MpvOption(MpvApi api, string name, CustomParser<T>? parser = null, CustomFormatter<T>? formatter = null) : base(api, name, parser, formatter)
+        public MpvOption(MpvApi api, string name) : base(api, name)
+        {
+        }
+    }
+
+    public class MpvOptionRef<T> : MpvPropertyWriteRef<T>
+        where T : class
+    {
+        public MpvOptionRef(MpvApi api, string name) : base(api, name)
         {
         }
     }

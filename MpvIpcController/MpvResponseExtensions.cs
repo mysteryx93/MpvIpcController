@@ -15,7 +15,7 @@ namespace HanumanInstitute.MpvIpcController
             where T : class
         {
             response.CheckNotNull(nameof(response));
-            response.Data.CheckNotNull(nameof(response.Data));
+            response!.Data.CheckNotNull(nameof(response.Data));
 
             return response.Data!;
         }
@@ -27,7 +27,7 @@ namespace HanumanInstitute.MpvIpcController
             where T : struct
         {
             response.CheckNotNull(nameof(response));
-            response.Data.CheckNotNull(nameof(response.Data));
+            response!.Data.CheckNotNull(nameof(response.Data));
 
             return response.Data!.Value;
         }
@@ -39,18 +39,15 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="response">The response to copy and change type.</param>
         /// <param name="data">The data to set.</param>
         /// <returns>A MpvResponse object of specified type.</returns>
-        public static MpvResponse<T>? Copy<T>(this MpvResponse? response, [AllowNull] T data)
+        public static MpvResponse<T> Copy<T>(this MpvResponse response, [AllowNull] T data)
         {
-            if (response != null)
+            response.CheckNotNull(nameof(response));
+            return new MpvResponse<T>()
             {
-                return new MpvResponse<T>()
-                {
-                    Data = data,
-                    Error = response.Error,
-                    RequestID = response.RequestID
-                };
-            }
-            return null;
+                Data = data,
+                Error = response.Error,
+                RequestID = response.RequestID
+            };
         }
 
         /// <summary>
@@ -60,39 +57,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <param name="response">The response to copy and change type.</param>
         /// <param name="data">The data to parse.</param>
         /// <returns>A MpvResponse object of specified type.</returns>
-        public static MpvResponse<T>? Parse<T>(this MpvResponse? response)
+        public static MpvResponse<T> Parse<T>(this MpvResponse response)
         {
-            return response.Copy(ParseData<T>(response));
-        }
-
-        [return: MaybeNull]
-        public static T ParseData<T>(this MpvResponse? response)
-        {
-            var data = response?.Data;
-            if (data == null) { return default; }
-
-            if (typeof(T) == typeof(string))
-            {
-                var str = data.ToString();
-                if (str.Length >= 2 && str[0] == '"' && str[str.Length - 1] == '"')
-                {
-                    str = str.Substring(1, str.Length - 2);
-                }
-                return (T)(object)str;
-            }
-            if (typeof(T).IsValueType)
-            {
-                var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-                return (T)Convert.ChangeType(data, type, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                var jsonOptions = new JsonSerializerOptions()
-                {
-                    PropertyNamingPolicy = new MpvJsonNamingPolicy()
-                };
-                return JsonSerializer.Deserialize<T>(data, jsonOptions);
-            }
+            return response.Copy(MpvProperty<T?>.ParseDefault(response.Data)!);
         }
 
         ///// <summary>

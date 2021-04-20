@@ -3,11 +3,10 @@
 // MPV JSON IPC protocol documentation
 // https://mpv.io/manual/stable/#json-ipc
 //
-// Based on v0.32
+// Updated on 2021-04-15 (v0.33.1)
 //
 // Changelog to update for future versions available here
-// https://github.com/mpv-player/mpv/releases
-// https://github.com/mpv-player/mpv/blob/master/DOCS/client-api-changes.rst
+// https://github.com/mpv-player/mpv/commits/master/DOCS
 
 namespace HanumanInstitute.MpvIpcController
 {

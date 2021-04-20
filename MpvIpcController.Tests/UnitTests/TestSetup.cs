@@ -25,7 +25,6 @@ namespace HanumanInstitute.MpvIpcController.Tests
         [NotNull]
         public MpvController? Controller { get; private set; }
         private readonly SemaphoreSlim _semaphoreResponse = new SemaphoreSlim(1, 1);
-        [NotNull]
         private PipeStreamListener? _listener;
         public StringBuilder ServerLog { get; } = new StringBuilder();
 

@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace HanumanInstitute.MpvIpcController.Tests
+namespace HanumanInstitute.MpvIpcController.IntegrationTests
 {
     public class TestIntegrationSetup : IDisposable
     {
@@ -38,7 +38,8 @@ namespace HanumanInstitute.MpvIpcController.Tests
         public async Task LogAndQuitAsync(ITestOutputHelper? output)
         {
             output?.WriteLine(Controller?.Log?.ToString());
-            await Api.QuitAsync(options: new ApiOptions() { WaitForResponse = false });
+            await Api.QuitAsync(options: new ApiOptions() { WaitForResponse = true });
+            await Task.Delay(100);
         }
 
 

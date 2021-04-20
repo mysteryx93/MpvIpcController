@@ -19,31 +19,26 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// The audio sample format as string. This uses the same names as used in other places of mpv.
         /// </summary>
-        public MpvPropertyRead<string?> Format => _format ??= new MpvPropertyRead<string?>(_api, _prefix + "/format");
-        private MpvPropertyRead<string?>? _format;
+        public MpvPropertyReadString Format => new(_api, _prefix + "/format");
 
         /// <summary>
         /// The audio sample rate.
         /// </summary>
-        public MpvPropertyRead<int?> SampleRate => _sampleRate ??= new MpvPropertyRead<int?>(_api, _prefix + "/samplerate");
-        private MpvPropertyRead<int?>? _sampleRate;
+        public MpvPropertyRead<int> SampleRate => new(_api, _prefix + "/samplerate");
 
         /// <summary>
         /// The channel layout as a string. This is similar to what the --audio-channels accepts.
         /// </summary>
-        public MpvPropertyRead<string?> AudioChannels => _channels ??= new MpvPropertyRead<string?>(_api, _prefix + "/channels");
-        private MpvPropertyRead<string?>? _channels;
+        public MpvPropertyReadString AudioChannels => new(_api, _prefix + "/channels");
 
         /// <summary>
         /// As channels, but instead of the possibly cryptic actual layout sent to the audio device, return a hopefully more human readable form. (Usually only AudioOutParams.HrChannels makes sense.)
         /// </summary>
-        public MpvPropertyRead<string?> HrChannels => _hrChannels ??= new MpvPropertyRead<string?>(_api, _prefix + "/hr-channels");
-        private MpvPropertyRead<string?>? _hrChannels;
+        public MpvPropertyReadString HrChannels => new(_api, _prefix + "/hr-channels");
 
         /// <summary>
         /// Number of audio channels.
         /// </summary>
-        public MpvPropertyRead<int?> ChannelCount => _channelCount ??= new MpvPropertyRead<int?>(_api, _prefix + "/channel-count");
-        private MpvPropertyRead<int?>? _channelCount;
+        public MpvPropertyRead<int> ChannelCount => new(_api, _prefix + "/channel-count");
     }
 }
