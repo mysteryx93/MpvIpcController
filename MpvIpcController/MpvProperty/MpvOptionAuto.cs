@@ -19,9 +19,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Gets whether the option is 'auto'.
         /// </summary>
-        public async Task<bool> GetAutoAxync(ApiOptions? options = null)
+        public async Task<bool> GetAutoAsync(ApiOptions? options = null)
         {
-            var result = await Api.GetPropertyAsync(PropertyName, options).ConfigureAwait(false);
+            var result = await Api.GetPropertyAsync<string?>(PropertyName, options).ConfigureAwait(false);
             return result != null && result.HasValue && result.Value() == "auto";
         }
 
@@ -63,10 +63,10 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Gets whether the option is 'auto'.
         /// </summary>
-        public async Task<bool> GetAutoAxync(ApiOptions? options = null)
+        public async Task<bool> GetAutoAsync(ApiOptions? options = null)
         {
-            var result = await Api.GetPropertyAsync(PropertyName, options).ConfigureAwait(false);
-            return result != null && result.HasValue && result.Value() == "auto";
+            var result = await Api.GetPropertyAsync<string?>(PropertyName, options).ConfigureAwait(false);
+            return result != null && result.HasValue && result.Data == "auto";
         }
 
         /// <summary>

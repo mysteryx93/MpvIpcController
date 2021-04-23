@@ -75,7 +75,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Returns the value of the given property. The value will be sent in the data field of the replay message.
         /// </summary>
-        public async Task<T?> GetAsync(ApiOptions? options = null)
+        public virtual async Task<T?> GetAsync(ApiOptions? options = null)
         {
             var result = await GetRawAsync(options).ConfigureAwait(false);
             return ParseValue(result);

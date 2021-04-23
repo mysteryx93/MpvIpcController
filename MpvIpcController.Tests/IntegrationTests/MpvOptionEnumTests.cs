@@ -5,17 +5,17 @@ using Xunit.Abstractions;
 
 namespace HanumanInstitute.MpvIpcController.IntegrationTests
 {
-    public class MpvOptionTests
+    public class MpvOptionEnumTests
     {
         private readonly ITestOutputHelper _output;
 
-        public MpvOptionTests(ITestOutputHelper output)
+        public MpvOptionEnumTests(ITestOutputHelper output)
         {
             _output = output;
         }
 
         [Fact]
-        public async Task ObserveAsync_VideoIdProperty_RaisesPropertyChanged()
+        public async Task ObserveAsync_HrSeekOption_RaisesPropertyChanged()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
             var observeId = 1;
@@ -27,10 +27,10 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
                 {
                     changedName = e.Name;
                 };
-                await app.Api.VideoId.ObserveAsync(observeId);
-                await app.LoadVideoAsync();
+                await app.Api.HrSeek.ObserveAsync(observeId);
+                await app.Api.HrSeek.SetAsync(HrSeekOption.Absolute);
 
-                Assert.Equal(app.Api.VideoId.PropertyName, changedName);
+                Assert.Equal(app.Api.HrSeek.PropertyName, changedName);
             }
             finally
             {
@@ -44,17 +44,18 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             using var app = await TestIntegrationSetup.CreateAsync();
             var observeId = 1;
             string? changedName = null;
-            await app.Api.VideoId.ObserveAsync(observeId);
+            await app.Api.HrSeek.ObserveAsync(observeId);
 
             try
             {
+                await app.Api.UnobservePropertyAsync(observeId);
+                await Task.Delay(100);
+
                 app.Api.PropertyChanged += (s, e) =>
                 {
                     changedName = e.Name;
                 };
-                await app.Api.UnobservePropertyAsync(observeId);
-                await Task.Delay(100);
-                await app.LoadVideoAsync();
+                await app.Api.HrSeek.SetAsync(HrSeekOption.Absolute);
 
                 Assert.Null(changedName);
             }
@@ -65,15 +66,15 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
         [Fact]
-        public async Task GetAsync_Volume_ReturnsValue()
+        public async Task GetAsync_HrSeek_ReturnsNull()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
 
             try
             {
-                var result = await app.Api.Volume.GetAsync();
+                var result = await app.Api.HrSeek.GetAsync();
 
-                Assert.True(result > 0);
+                Assert.Equal(HrSeekOption.Default, result);
             }
             finally
             {
@@ -82,18 +83,21 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
 
-        [Fact]
-        public async Task SetAsync_Volume_HasNewValue()
+        [Theory]
+        [InlineData(HrSeekOption.Default)]
+        [InlineData(HrSeekOption.Absolute)]
+        [InlineData(HrSeekOption.Yes)]
+        [InlineData(HrSeekOption.No)]
+        public async Task SetAsync_HrSeek_HasNewValue(HrSeekOption value)
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = 100;
 
             try
             {
-                await app.Api.Volume.SetAsync(volume);
+                await app.Api.HrSeek.SetAsync(value);
 
-                var result = await app.Api.Volume.GetAsync();
-                Assert.Equal(volume, result);
+                var result = await app.Api.HrSeek.GetAsync();
+                Assert.Equal(value, result);
             }
             finally
             {
@@ -102,19 +106,15 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
         [Fact]
-        public async Task AddAsync_Volume_HasAddedValue()
+        public async Task AddAsync_HrSeek_ThrowsException()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = 50;
-            var volumeAdd = 10;
-            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.Volume.AddAsync(volumeAdd);
+                Task Act() => app.Api.HrSeek.AddAsync(HrSeekOption.Yes);
 
-                var result = await app.Api.Volume.GetAsync();
-                Assert.Equal(volume + volumeAdd, result);
+                await Assert.ThrowsAsync<NotImplementedException>(Act);
             }
             finally
             {
@@ -123,19 +123,15 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
         [Fact]
-        public async Task MultiplyAsync_Volume_HasMultipliedValue()
+        public async Task MultiplyAsync_HrSeek_ThrowsException()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = 50;
-            var volumeMul = 1.1;
-            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.Volume.MultiplyAsync(volumeMul);
+                Task Act() => app.Api.HrSeek.MultiplyAsync(1);
 
-                var result = await app.Api.Volume.GetAsync();
-                Assert.Equal((int)(volume * volumeMul), result);
+                await Assert.ThrowsAsync<NotImplementedException>(Act);
             }
             finally
             {
@@ -144,18 +140,16 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
         [Fact]
-        public async Task CycleAsync_VolumeUp_HasGreaterValue()
+        public async Task CycleAsync_HrSeekUp_HasGreaterValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = 50;
-            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.Volume.CycleAsync();
+                await app.Api.HrSeek.CycleAsync();
 
-                var result = await app.Api.Volume.GetAsync();
-                Assert.True(result > volume);
+                var result = await app.Api.HrSeek.GetAsync();
+                Assert.NotEqual(HrSeekOption.Default, result);
             }
             finally
             {
@@ -164,18 +158,16 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
         [Fact]
-        public async Task CycleAsync_VolumeDown_HasLowerValue()
+        public async Task CycleAsync_HrSeekDown_HasLowerValue()
         {
             using var app = await TestIntegrationSetup.CreateAsync();
-            var volume = 50;
-            await app.Api.Volume.SetAsync(volume);
 
             try
             {
-                await app.Api.Volume.CycleAsync(CycleDirection.Down);
+                await app.Api.HrSeek.CycleAsync(CycleDirection.Down);
 
-                var result = await app.Api.Volume.GetAsync();
-                Assert.True(result < volume);
+                var result = await app.Api.HrSeek.GetAsync();
+                Assert.NotEqual(HrSeekOption.Default, result);
             }
             finally
             {

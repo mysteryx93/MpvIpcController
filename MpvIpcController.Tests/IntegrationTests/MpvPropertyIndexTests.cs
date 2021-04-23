@@ -29,8 +29,7 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
                     changedName = e.Name;
                 };
                 await app.Api.Option[propIndex].ObserveAsync(observeId);
-                await app.Api.LoadFileAsync(app.SampleClip);
-                await Task.Delay(100);
+                await app.LoadVideoAsync();
 
                 Assert.EndsWith(propIndex, changedName);
             }
@@ -57,8 +56,7 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
                 };
                 await app.Api.Option[propIndex].UnobservePropertyAsync(observeId);
                 await Task.Delay(100);
-                await app.Api.LoadFileAsync(app.SampleClip);
-                await Task.Delay(100);
+                await app.LoadVideoAsync();
 
                 Assert.Null(changedName);
             }
@@ -84,7 +82,6 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
                 await app.LogAndQuitAsync(_output);
             }
         }
-
 
         [Fact]
         public async Task SetAsync_Volume_HasNewValue()

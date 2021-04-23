@@ -966,5 +966,16 @@ namespace HanumanInstitute.MpvIpcController
 
             await _mpv.SendMessageAsync(options, "change-list", name, operation.FormatMpvFlag(), value).ConfigureAwait(false);
         }
+
+        //public async Task ChangeListAsync(string name, ListOptionOperation operation, IEnumerable<string> values, ApiOptions? options = null)
+        //{
+        //    name.CheckNotNullOrEmpty(nameof(name));
+        //    operation.CheckEnumValid(nameof(operation));
+        //    values.CheckNotNull(nameof(values));
+
+        //    var strValue = string.Join(",", values.Select(x => "%{0}%{1}".FormatInvariant(x.Length, x)));
+
+        //    await _mpv.SendMessageAsync(options, "change-list", name, operation.FormatMpvFlag(), strValue).ConfigureAwait(false);
+        //}
     }
 }

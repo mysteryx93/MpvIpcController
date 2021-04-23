@@ -19,10 +19,10 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Gets whether the option is 'no'.
         /// </summary>
-        public async Task<bool> GetNoAxync(ApiOptions? options = null)
+        public async Task<bool> GetNoAsync(ApiOptions? options = null)
         {
-            var result = await Api.GetPropertyAsync(PropertyName, options).ConfigureAwait(false);
-            return result != null && result.HasValue && result.Value() == "no";
+            var result = await Api.GetPropertyAsync<string?>(PropertyName, options).ConfigureAwait(false);
+            return result != null && result.HasValue && (result.Data == "no" || result.Data == "false");
         }
     }
 
@@ -42,9 +42,9 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Gets whether the option is 'no'.
         /// </summary>
-        public async Task<bool> GetNoAxync(ApiOptions? options = null)
+        public async Task<bool> GetNoAsync(ApiOptions? options = null)
         {
-            var result = await Api.GetPropertyAsync(PropertyName, options).ConfigureAwait(false);
+            var result = await Api.GetPropertyAsync<string?>(PropertyName, options).ConfigureAwait(false);
             return result != null && result.HasValue && result.Value() == "no";
         }
     }

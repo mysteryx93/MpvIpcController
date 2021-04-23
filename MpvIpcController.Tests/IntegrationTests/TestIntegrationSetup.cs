@@ -35,6 +35,12 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             Api.Controller.DefaultOptions.ThrowOnError = true;
         }
 
+        public async Task LoadVideoAsync()
+        {
+            await Api.LoadFileAsync(SampleClip);
+            await Task.Delay(100);
+        }
+
         public async Task LogAndQuitAsync(ITestOutputHelper? output)
         {
             output?.WriteLine(Controller?.Log?.ToString());

@@ -129,7 +129,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Select when to use precise seeks that are not limited to keyframes. Such seeks require decoding video from the previous keyframe up to the target position and so can take some time depending on decoding performance. For some video formats, precise seeks are disabled. This option selects the default choice to use for seeks; it is possible to explicitly override that default in the definition of key bindings and in input commands.
         /// </summary>
-        public MpvPropertyEnum<HrSeekOption> HrSeek => new(this, "hr-seek");
+        public MpvOptionEnum<HrSeekOption> HrSeek => new(this, "hr-seek");
 
         /// <summary>
         /// This option exists to work around failures to do precise seeks (as in --hr-seek) caused by bugs or limitations in the demuxers for some file formats. Some demuxers fail to seek to a keyframe before the given target position, going to a later position instead. The value of this option is subtracted from the time stamp given to the demuxer. Thus, if you set this option to 1.5 and try to do a precise seek to 60 seconds, the demuxer is told to seek to time 58.5, which hopefully reduces the chance that it erroneously goes to some time later than 60 seconds. The downside of setting this option is that precise seeks become slower, as video between the earlier demuxer position and the real target may be unnecessarily decoded.
@@ -145,7 +145,7 @@ namespace HanumanInstitute.MpvIpcController
         /// Controls how to seek in files. Note that if the index is missing from a file, it will be built on the fly by default, so you don't need to change this. But it might help with some broken files.
         /// This option only works if the underlying media supports seeking (i.e. not with stdin, pipe, etc).
         /// </summary>
-        public MpvPropertyEnum<IndexMode> Index => new(this, "index");
+        public MpvOptionEnum<IndexMode> Index => new(this, "index");
 
         /// <summary>
         /// Load URLs from playlists which are considered unsafe (default: no). This includes special protocols and anything that doesn't refer to normal files. Local files and HTTP links on the other hand are always considered safe.
@@ -312,7 +312,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Load multiple scripts by separating them with the path separator (: on Unix, ; on Windows).
         /// </summary>
-        public MpvOptionList Scripts => new(this, "scripts", isPath: true);
+        public MpvOptionList Scripts => new(this, "scripts");
 
         /// <summary>
         /// Set options for scripts. A script can query an option by key. If an option is used and what semantics the option value has depends entirely on the loaded scripts. Values not claimed by any scripts are ignored.
