@@ -85,6 +85,26 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
         }
 
         [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task SetAsync_Empty_ListEmpty(string prop)
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                await app.Api.ResetOnNextFile.SetAsync(prop);
+
+                var result = await app.Api.ResetOnNextFile.GetAsync();
+                Assert.Empty(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(GetProp))]
         public async Task AddAsync_SingleValue_ReturnsValue(string prop)
         {
@@ -104,23 +124,42 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             }
         }
 
-        //[Fact]
-        //public async Task AddAsync_MultipleValues_ReturnsValue()
-        //{
-        //    using var app = await TestIntegrationSetup.CreateAsync();
+        [Fact]
+        public async Task AddAsync_MultipleValues_ReturnsValue()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
 
-        //    try
-        //    {
-        //        await app.Api.ResetOnNextFile.AddAsync(PropMulti);
+            try
+            {
+                await app.Api.ResetOnNextFile.AddAsync(propList);
 
-        //        var result = await app.Api.ResetOnNextFile.GetAsync();
-        //        Assert.Equal(propList, result);
-        //    }
-        //    finally
-        //    {
-        //        await app.LogAndQuitAsync(_output);
-        //    }
-        //}
+                var result = await app.Api.ResetOnNextFile.GetAsync();
+                Assert.Equal(propList, result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task AddAsync_Empty_ThrowsException(string prop)
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                Task Act() => app.Api.ResetOnNextFile.AddAsync(prop);
+
+                await Assert.ThrowsAnyAsync<ArgumentException>(Act);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
 
         [Theory]
         [MemberData(nameof(GetProp))]
@@ -135,6 +174,25 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
 
                 var result = await app.Api.ResetOnNextFile.GetAsync();
                 Assert.Empty(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task RemoveAsync_Empty_ThrowsException(string prop)
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                Task Act() => app.Api.ResetOnNextFile.RemoveAsync(prop);
+
+                await Assert.ThrowsAnyAsync<ArgumentException>(Act);
             }
             finally
             {

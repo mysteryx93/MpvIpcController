@@ -81,7 +81,6 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             }
         }
 
-
         [Fact]
         public async Task SetAsync_Volume_HasNewValue()
         {

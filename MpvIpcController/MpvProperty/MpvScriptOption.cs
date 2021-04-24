@@ -9,8 +9,8 @@ namespace HanumanInstitute.MpvIpcController
     /// </summary>
     public class MpvScriptOption
     {
-        private MpvOptionDictionary _options;
-        private string _key;
+        private readonly MpvOptionDictionary _options;
+        private readonly string _key;
 
         public MpvScriptOption(MpvApi api, string key)
         {
@@ -22,7 +22,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Gets the value of the script option.
         /// </summary>
-        public Task<string> GetAsync(ApiOptions? options = null) => _options.GetAsync(_key, options);
+        public Task<string?> GetAsync(ApiOptions? options = null) => _options.GetAsync(_key, options);
         /// <summary>
         /// Sets the value of the script option.
         /// </summary>

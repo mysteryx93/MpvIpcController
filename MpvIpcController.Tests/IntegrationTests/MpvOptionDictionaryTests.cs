@@ -21,7 +21,7 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
 {
             new[] { "key1", "value1" },
             new[] { "m\"&\"n", "漢字" },
-            new[] { "漢字", null },
+            new[] { "漢字", "" },
             new[] { "Me, Myself & I", "-=<->=-" },
             new[] { "%1%2%3%4%5", "%1%2%3%4%5" },
             new[] { "[ABC]abc", "Val[ABC]abc" }
@@ -55,27 +55,6 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(GetKeyValues))]
-        public async Task SetAsync_SingleValue_HasSingleValue(string key, string value)
-        {
-            using var app = await TestIntegrationSetup.CreateAsync();
-
-            try
-            {
-                await app.Api.YouTubeDlRawOptions.AddAsync(key, value);
-
-                var result = await app.Api.YouTubeDlRawOptions.GetAsync();
-
-                Assert.Single(result);
-                Assert.Equal(new[] { new KeyValuePair<string, string>(key, value ?? "") }, result);
-            }
-            finally
-            {
-                await app.LogAndQuitAsync(_output);
-            }
-        }
-
         [Fact]
         public async Task SetAsync_MultipleValues_HasMultipleValues()
         {
@@ -84,9 +63,10 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
 
             try
             {
-                await app.Api.YouTubeDlRawOptions.SetAsync(values);
+                // ScriptOptions isn't empty, it should override existing values.
+                await app.Api.ScriptOptions.SetAsync(values);
 
-                var result = await app.Api.YouTubeDlRawOptions.GetAsync();
+                var result = await app.Api.ScriptOptions.GetAsync();
                 Assert.Equal(values.ToList(), result?.ToList());
             }
             finally
@@ -115,23 +95,43 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             }
         }
 
-        //[Fact]
-        //public async Task AddAsync_MultipleValues_ReturnsValue()
-        //{
-        //    using var app = await TestIntegrationSetup.CreateAsync();
+        [Fact]
+        public async Task AddAsync_MultipleValues_ReturnsValue()
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+            var values = GetKeyValuesList();
 
-        //    try
-        //    {
-        //        await app.Api.ResetOnNextFile.AddAsync(PropMulti);
+            try
+            {
+                await app.Api.YouTubeDlRawOptions.AddAsync(values);
 
-        //        var result = await app.Api.ResetOnNextFile.GetAsync();
-        //        Assert.Equal(propList, result);
-        //    }
-        //    finally
-        //    {
-        //        await app.LogAndQuitAsync(_output);
-        //    }
-        //}
+                var result = await app.Api.YouTubeDlRawOptions.GetAsync();
+                Assert.Equal(values, result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Theory]
+        [InlineData(null, "a")]
+        [InlineData("", null)]
+        public async Task AddAsync_EmptyKey_ThrowsException(string key, string value)
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                Task Act() => app.Api.YouTubeDlRawOptions.AddAsync(key, value);
+
+                await Assert.ThrowsAnyAsync<ArgumentException>(Act);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
 
         [Theory]
         [MemberData(nameof(GetKeyValues))]
@@ -146,6 +146,25 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
 
                 var result = await app.Api.YouTubeDlRawOptions.GetAsync();
                 Assert.Empty(result);
+            }
+            finally
+            {
+                await app.LogAndQuitAsync(_output);
+            }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task RemoveAsync_KeyEmpty_ThrowsException(string key)
+        {
+            using var app = await TestIntegrationSetup.CreateAsync();
+
+            try
+            {
+                Task Act() => app.Api.YouTubeDlRawOptions.RemoveAsync(key);
+
+                await Assert.ThrowsAnyAsync<ArgumentException>(Act);
             }
             finally
             {

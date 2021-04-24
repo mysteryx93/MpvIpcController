@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HanumanInstitute.Validators;
 
 namespace HanumanInstitute.MpvIpcController
 {
@@ -14,8 +15,6 @@ namespace HanumanInstitute.MpvIpcController
 
         public MpvOptionList(MpvApi api, string name) : base(api, name)
         {
-            // private readonly char _separator;
-            // , bool isPath = false
             // _separator = isPath ? System.IO.Path.PathSeparator : ',';
         }
 
@@ -32,7 +31,6 @@ namespace HanumanInstitute.MpvIpcController
         /// Set a list of items (using the list separator, interprets escapes).
         /// </summary>
         public Task SetAsync(string value, ApiOptions? options = null) => SetAsync(new[] { value }, options);
-        // Api.ChangeListAsync(PropertyName, ListOptionOperation.Set, value, options);
 
         /// <summary>
         /// Set a list of items.
@@ -41,26 +39,34 @@ namespace HanumanInstitute.MpvIpcController
         {
             // For some properties, SetProperty calls Append instead of Set, so we clear first for consistency.
             await ClearAsync(options).ConfigureAwait(false);
-            foreach (var item in values)
-            {
-                await AddAsync(item, options).ConfigureAwait(false);
-            }
+            await AddAsync(values, options).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Append single item (does not interpret escapes).
+        /// Append single item.
         /// </summary>
-        public Task AddAsync(string value, ApiOptions? options = null) => Api.ChangeListAsync(PropertyName, ListOptionOperation.Add, value, options);
+        public async Task AddAsync(string value, ApiOptions? options = null)
+        {
+            value.CheckNotNullOrEmpty(nameof(value));
 
-        ///// <summary>
-        ///// Append 1 or more items (same syntax as Set).
-        ///// </summary>
-        //public Task AddAsync(string value, ApiOptions? options = null) => Api.ChangeListAsync(PropertyName, ListOptionOperation.Add, value, options);
+            await Api.ChangeListAsync(PropertyName, ListOptionOperation.Append, value, options).ConfigureAwait(false);
+        }
 
-        ///// <summary>
-        ///// Prepend 1 or more items (same syntax as Set).
-        ///// </summary>
-        //public Task PreAsync(string value, ApiOptions? options = null) => Api.ChangeListAsync(PropertyName, ListOptionOperation.Pre, value, options);
+        /// <summary>
+        /// Adds a list of items to the list.
+        /// </summary>
+        /// <param name="values">The list of items to add.</param>
+        /// <returns></returns>
+        public override async Task AddAsync(IEnumerable<string> values, ApiOptions? options = null)
+        {
+            foreach (var item in values)
+            {
+                if (item.HasValue())
+                {
+                    await AddAsync(item, options).ConfigureAwait(false);
+                }
+            }
+        }
 
         /// <summary>
         /// Clear the option (remove all items).
@@ -70,7 +76,12 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Delete item if present (does not interpret escapes).
         /// </summary>
-        public Task RemoveAsync(string value, ApiOptions? options = null) => Api.ChangeListAsync(PropertyName, ListOptionOperation.Remove, value, options);
+        public async Task RemoveAsync(string value, ApiOptions? options = null)
+        {
+            value.CheckNotNullOrEmpty(nameof(value));
+
+            await Api.ChangeListAsync(PropertyName, ListOptionOperation.Remove, value, options).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Append an item, or remove if if it already exists (no escapes).
