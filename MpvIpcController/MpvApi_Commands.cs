@@ -174,7 +174,7 @@ namespace HanumanInstitute.MpvIpcController
         /// </summary>
         /// <param name="units">The amount of units to seek. Seconds by default.</param>
         /// <param name="flags">Flags controlling the seek mode. Flags can be combined.</param>
-        public async Task SeekAsync(double units, SeekOptions flags, ApiOptions? options = null)
+        public async Task SeekAsync(double units, SeekOption flags, ApiOptions? options = null)
         {
             await _mpv.SendMessageAsync(options, "seek", units, flags.GetFlags().FormatMpvFlag()).ConfigureAwait(false);
         }

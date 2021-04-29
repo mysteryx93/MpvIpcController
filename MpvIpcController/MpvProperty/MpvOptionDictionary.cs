@@ -56,11 +56,11 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Gets a dictionary containing all values.
         /// </summary>
-        public override async Task<IDictionary<string, string>?> GetAsync(ApiOptions? options = null)
-        {
-            var values = await Api.GetPropertyAsync(PropertyName, options).ConfigureAwait(false);
-            return ParseValue(values.Data) ?? new Dictionary<string, string>();
-        }
+        //public override async Task<IDictionary<string, string>?> GetAsync(ApiOptions? options = null)
+        //{
+        //    var values = await Api.GetPropertyAsync(PropertyName, options).ConfigureAwait(false);
+        //    return ParseValue(values.Data) ?? new Dictionary<string, string>();
+        //}
 
         /// <summary>
         /// Adds a key/value pair to the list.

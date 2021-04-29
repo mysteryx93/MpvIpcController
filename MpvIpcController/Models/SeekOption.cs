@@ -8,7 +8,7 @@ namespace HanumanInstitute.MpvIpcController
     /// By default, keyframes is used for relative, relative-percent, and absolute-percent seeks, while exact is used for absolute seeks.
     /// </summary>
     [Flags]
-    public enum SeekOptions
+    public enum SeekOption
     {
         None = 0,
         /// <summary>

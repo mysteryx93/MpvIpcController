@@ -1,0 +1,17 @@
+﻿using System;
+
+namespace HanumanInstitute.MpvIpcController
+{
+    /// <summary>
+    /// Video scaler to use.
+    /// </summary>
+    public enum ZimgScaler
+    {
+        Point,
+        Bilinear,
+        Bicubic,
+        Spline16,
+        Spline36,
+        Lanczos
+    }
+}

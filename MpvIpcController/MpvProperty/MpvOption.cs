@@ -17,4 +17,11 @@ namespace HanumanInstitute.MpvIpcController
         {
         }
     }
+
+    public class MpvOptionString : MpvOptionRef<string>
+    {
+        public MpvOptionString(MpvApi api, string name) : base(api, name)
+        {
+        }
+    }
 }

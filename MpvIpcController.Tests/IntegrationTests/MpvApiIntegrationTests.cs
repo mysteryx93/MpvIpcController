@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -156,15 +157,17 @@ namespace HanumanInstitute.MpvIpcController.IntegrationTests
             try
             {
                 //await app.Api.LoadFileAsync(app.SampleClip);
-                await Task.Delay(100);
-                // await app.Api.HelpAsync();
-                // var result = await app.Api.OrderedChapters.GetAsync();
+                //await Task.Delay(100);
+                var result = await app.Api.VideoSyncMaxVideoChange.GetAsync();
+                //await app.Api.TerminalMsgLevel.SetAsync(new Dictionary<string, string>() { { "all", "warn" } });
+                //var result = await app.Api.TerminalMsgLevel.GetAsync();
+                //await Task.Delay(100);
 
                 // Assert.NotNull(result);
             }
             finally
             {
-                // await app.LogAndQuitAsync(_output);
+                await app.LogAndQuitAsync(_output);
             }
         }
     }

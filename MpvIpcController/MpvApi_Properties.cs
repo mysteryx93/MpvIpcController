@@ -126,7 +126,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// Position in current file (0-100). The advantage over using this instead of calculating it out of other properties is that it properly falls back to estimating the playback position from the byte position, if the file duration is not known.
         /// </summary>
-        public MpvPropertyWrite<float> PercentPos => new(this, "percent-pos");
+        public MpvPropertyWrite<double> PercentPos => new(this, "percent-pos");
 
         /// <summary>
         /// Position in current file in seconds.
@@ -418,14 +418,9 @@ namespace HanumanInstitute.MpvIpcController
         public MpvPropertyRead<float> EstimatedVideoFilterFps => new(this, "estimated-vf-fps");
 
         /// <summary>
-        /// Window size multiplier. Setting this will resize the video window to the values contained in dwidth and dheight multiplied with the value set with this property. Setting 1 will resize to original video size (or to be exact, the size the video filters output). 2 will set the double size, 0.5 halves the size.
-        /// </summary>
-        public MpvPropertyWrite<float> WindowScale => new(this, "window-scale");
-
-        /// <summary>
         /// The window-scale value calculated from the current window size. This has the same value as ``window-scale`` if the window size was not changed since setting the option, and the window size was not restricted in other ways.The property is unavailable if no video is active.
         /// </summary>
-        public MpvPropertyWrite<float> CurrentWindowScale => new(this, "current-window-scale");
+        public MpvPropertyWrite<double> CurrentWindowScale => new(this, "current-window-scale");
 
         /// <summary>
         /// Whether the window has focus. Currently works only on X11 and Wayland.
@@ -440,7 +435,7 @@ namespace HanumanInstitute.MpvIpcController
         /// <summary>
         /// The refresh rate of the current display. Currently, this is the lowest FPS of any display covered by the video, as retrieved by the underlying system APIs (e.g. xrandr on X11). It is not the measured FPS. It's not necessarily available on all platforms. Note that any of the listed facts may change any time without a warning.
         /// </summary>
-        public MpvPropertyRead<float> DisplayFps => new(this, "display-fps");
+        // public MpvPropertyRead<float> DisplayFps => new(this, "display-fps");
 
         /// <summary>
         /// Only available if display-sync mode (as selected by --video-sync) is active. Returns the actual rate at which display refreshes seem to occur, measured by system time.
