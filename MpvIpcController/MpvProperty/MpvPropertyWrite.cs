@@ -1,87 +1,83 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿namespace HanumanInstitute.MpvIpcController;
 
-namespace HanumanInstitute.MpvIpcController
+/// <summary>
+/// Represents a read/write MPV property.
+/// </summary>
+/// <typeparam name="T">The return type of the property.</typeparam>
+public class MpvPropertyWrite<T> : MpvPropertyRead<T>
+    where T : struct
 {
-    /// <summary>
-    /// Represents a read/write MPV property.
-    /// </summary>
-    /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyWrite<T> : MpvPropertyRead<T>
-        where T : struct
+    public MpvPropertyWrite(MpvApi api, string name) : base(api, name)
     {
-        public MpvPropertyWrite(MpvApi api, string name) : base(api, name)
-        {
-        }
-
-        /// <summary>
-        /// Set the given property or option to the given value.
-        /// </summary>
-        /// <param name="value">The value to set.</param>
-        public virtual Task SetAsync(T value, ApiOptions? options = null) => Api.SetPropertyAsync(PropertyName, FormatValue(value), options);
-
-        /// <summary>
-        /// Add the given value to the property or option. On overflow or underflow, clamp the property to the maximum. If <value> is omitted, assume 1.
-        /// </summary>
-        /// <param name="value">The value to add.</param>
-        public virtual Task AddAsync(T value, ApiOptions? options = null) => Api.AddAsync(PropertyName, FormatValue(value), options);
-
-        /// <summary>
-        /// Similar to add, but multiplies the property or option with the numeric value.
-        /// </summary>
-        /// <param name="value">The multiplication factor.</param>
-        public virtual Task MultiplyAsync(double value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, value, options);
-
-        /// <summary>
-        /// Cycles the given property or option. The second argument can be up or down to set the cycle direction. On overflow, set the property back to the minimum, on underflow set it to the maximum.
-        /// </summary>
-        /// <param name="direction">The cycling direction. By default, Up.</param>
-        public virtual Task CycleAsync(CycleDirection direction = CycleDirection.Up, ApiOptions? options = null) => Api.CycleAsync(PropertyName, direction, options);
     }
 
     /// <summary>
-    /// Represents a read/write MPV property.
+    /// Set the given property or option to the given value.
     /// </summary>
-    /// <typeparam name="T">The return type of the property.</typeparam>
-    public class MpvPropertyWriteRef<T> : MpvPropertyReadRef<T>
-        where T : class
+    /// <param name="value">The value to set.</param>
+    public virtual Task SetAsync(T value, ApiOptions? options = null) => Api.SetPropertyAsync(PropertyName, FormatValue(value), options);
+
+    /// <summary>
+    /// Add the given value to the property or option. On overflow or underflow, clamp the property to the maximum. If <value> is omitted, assume 1.
+    /// </summary>
+    /// <param name="value">The value to add.</param>
+    public virtual Task AddAsync(T value, ApiOptions? options = null) => Api.AddAsync(PropertyName, FormatValue(value), options);
+
+    /// <summary>
+    /// Similar to add, but multiplies the property or option with the numeric value.
+    /// </summary>
+    /// <param name="value">The multiplication factor.</param>
+    public virtual Task MultiplyAsync(double value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, value, options);
+
+    /// <summary>
+    /// Cycles the given property or option. The second argument can be up or down to set the cycle direction. On overflow, set the property back to the minimum, on underflow set it to the maximum.
+    /// </summary>
+    /// <param name="direction">The cycling direction. By default, Up.</param>
+    public virtual Task CycleAsync(CycleDirection direction = CycleDirection.Up, ApiOptions? options = null) => Api.CycleAsync(PropertyName, direction, options);
+}
+
+/// <summary>
+/// Represents a read/write MPV property.
+/// </summary>
+/// <typeparam name="T">The return type of the property.</typeparam>
+public class MpvPropertyWriteRef<T> : MpvPropertyReadRef<T>
+    where T : class
+{
+    public MpvPropertyWriteRef(MpvApi api, string name) : base(api, name)
     {
-        public MpvPropertyWriteRef(MpvApi api, string name) : base(api, name)
-        {
-        }
-
-        /// <summary>
-        /// Set the given property or option to the given value.
-        /// </summary>
-        /// <param name="value">The value to set.</param>
-        public virtual Task SetAsync(T value, ApiOptions? options = null) => Api.SetPropertyAsync(PropertyName, FormatValue(value), options);
-
-        /// <summary>
-        /// Add the given value to the property or option. On overflow or underflow, clamp the property to the maximum. If <value> is omitted, assume 1.
-        /// </summary>
-        /// <param name="value">The value to add.</param>
-        public virtual Task AddAsync(T value, ApiOptions? options = null) => Api.AddAsync(PropertyName, FormatValue(value), options);
-
-        /// <summary>
-        /// Similar to add, but multiplies the property or option with the numeric value.
-        /// </summary>
-        /// <param name="value">The multiplication factor.</param>
-        public virtual Task MultiplyAsync(T value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, FormatValue(value), options);
-
-        /// <summary>
-        /// Cycles the given property or option. The second argument can be up or down to set the cycle direction. On overflow, set the property back to the minimum, on underflow set it to the maximum.
-        /// </summary>
-        /// <param name="direction">The cycling direction. By default, Up.</param>
-        public virtual Task CycleAsync(CycleDirection direction = CycleDirection.Up, ApiOptions? options = null) => Api.CycleAsync(PropertyName, direction, options);
     }
 
     /// <summary>
-    /// Represents a read/write MPV property of type String.
+    /// Set the given property or option to the given value.
     /// </summary>
-    public class MpvPropertyWriteString : MpvPropertyWriteRef<string>
+    /// <param name="value">The value to set.</param>
+    public virtual Task SetAsync(T value, ApiOptions? options = null) => Api.SetPropertyAsync(PropertyName, FormatValue(value), options);
+
+    /// <summary>
+    /// Add the given value to the property or option. On overflow or underflow, clamp the property to the maximum. If <value> is omitted, assume 1.
+    /// </summary>
+    /// <param name="value">The value to add.</param>
+    public virtual Task AddAsync(T value, ApiOptions? options = null) => Api.AddAsync(PropertyName, FormatValue(value), options);
+
+    /// <summary>
+    /// Similar to add, but multiplies the property or option with the numeric value.
+    /// </summary>
+    /// <param name="value">The multiplication factor.</param>
+    public virtual Task MultiplyAsync(T value, ApiOptions? options = null) => Api.MultiplyAsync(PropertyName, FormatValue(value), options);
+
+    /// <summary>
+    /// Cycles the given property or option. The second argument can be up or down to set the cycle direction. On overflow, set the property back to the minimum, on underflow set it to the maximum.
+    /// </summary>
+    /// <param name="direction">The cycling direction. By default, Up.</param>
+    public virtual Task CycleAsync(CycleDirection direction = CycleDirection.Up, ApiOptions? options = null) => Api.CycleAsync(PropertyName, direction, options);
+}
+
+/// <summary>
+/// Represents a read/write MPV property of type String.
+/// </summary>
+public class MpvPropertyWriteString : MpvPropertyWriteRef<string>
+{
+    public MpvPropertyWriteString(MpvApi api, string name) : base(api, name)
     {
-        public MpvPropertyWriteString(MpvApi api, string name) : base(api, name)
-        {
-        }
     }
 }

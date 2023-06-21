@@ -1,18 +1,16 @@
-﻿using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace HanumanInstitute.MpvIpcController
+namespace HanumanInstitute.MpvIpcController;
+
+/// <summary>
+/// Select RTSP transport method (default: tcp). This selects the underlying network transport when playing rtsp://... URLs. The value lavf leaves the decision to libavformat.
+/// </summary>
+public enum RtspTransportMode
 {
-    /// <summary>
-    /// Select RTSP transport method (default: tcp). This selects the underlying network transport when playing rtsp://... URLs. The value lavf leaves the decision to libavformat.
-    /// </summary>
-    public enum RtspTransportMode
-    {
-        Lavf,
-        Udp,
-        [JsonPropertyName("udp_multicast")]
-        UdpMulticast,
-        Tcp,
-        Http
-    }
+    Lavf,
+    Udp,
+    [JsonPropertyName("udp_multicast")]
+    UdpMulticast,
+    Tcp,
+    Http
 }

@@ -1,14 +1,11 @@
-﻿using System;
+﻿namespace HanumanInstitute.MpvIpcController;
 
-namespace HanumanInstitute.MpvIpcController
+/// <summary>
+/// Changes the App activation policy. MacOS only.
+/// </summary>
+public enum AppActivationPolicy
 {
-    /// <summary>
-    /// Changes the App activation policy. MacOS only.
-    /// </summary>
-    public enum AppActivationPolicy
-    {
-        Regular,
-        Accessory,
-        Prohibited
-    }
+    Regular,
+    Accessory,
+    Prohibited
 }

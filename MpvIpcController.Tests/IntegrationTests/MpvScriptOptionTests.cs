@@ -5,101 +5,100 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace HanumanInstitute.MpvIpcController.IntegrationTests
+namespace HanumanInstitute.MpvIpcController.IntegrationTests;
+
+public class MpvScriptOptionTests
 {
-    public class MpvScriptOptionTests
+    private readonly ITestOutputHelper _output;
+
+    public MpvScriptOptionTests(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper _output;
+        _output = output;
+    }
 
-        public MpvScriptOptionTests(ITestOutputHelper output)
+    private static object[] GetValues() => new[]
+    {
+        new[] { "%6%VOLume" },
+        new[] { "m\"&\"n" },
+        new[] { "漢字" },
+        new[] { "Me, Myself & I" },
+        new[] { "%1%2%3%4%5" },
+        new[] { "[ABC]abc" }
+    };
+
+    [Fact]
+    public async Task GetAsync_YouTubeDlTryFirst_ReturnsNull()
+    {
+        using var app = await TestIntegrationSetup.CreateAsync();
+
+        try
         {
-            _output = output;
+            var result = await app.Api.YouTubeDlTryFirst.GetAsync();
+
+            Assert.Null(result);
         }
-
-        private static object[] GetValues() => new[]
+        finally
         {
-            new[] { "%6%VOLume" },
-            new[] { "m\"&\"n" },
-            new[] { "漢字" },
-            new[] { "Me, Myself & I" },
-            new[] { "%1%2%3%4%5" },
-            new[] { "[ABC]abc" }
-        };
-
-        [Fact]
-        public async Task GetAsync_YouTubeDlTryFirst_ReturnsNull()
-        {
-            using var app = await TestIntegrationSetup.CreateAsync();
-
-            try
-            {
-                var result = await app.Api.YouTubeDlTryFirst.GetAsync();
-
-                Assert.Null(result);
-            }
-            finally
-            {
-                await app.LogAndQuitAsync(_output);
-            }
+            await app.LogAndQuitAsync(_output);
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(GetValues))]
-        public async Task SetAsync_YouTubeDlTryFirst_ReturnsValue(string value)
+    [Theory]
+    [MemberData(nameof(GetValues))]
+    public async Task SetAsync_YouTubeDlTryFirst_ReturnsValue(string value)
+    {
+        using var app = await TestIntegrationSetup.CreateAsync();
+
+        try
         {
-            using var app = await TestIntegrationSetup.CreateAsync();
+            await app.Api.YouTubeDlTryFirst.SetAsync(value);
 
-            try
-            {
-                await app.Api.YouTubeDlTryFirst.SetAsync(value);
-
-                var result = await app.Api.YouTubeDlTryFirst.GetAsync();
-                Assert.Equal(value, result);
-            }
-            finally
-            {
-                await app.LogAndQuitAsync(_output);
-            }
+            var result = await app.Api.YouTubeDlTryFirst.GetAsync();
+            Assert.Equal(value, result);
         }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public async Task SetAsync_Empty_ReturnsValue(string value)
+        finally
         {
-            using var app = await TestIntegrationSetup.CreateAsync();
-
-            try
-            {
-                await app.Api.YouTubeDlTryFirst.SetAsync(value);
-
-                var result = await app.Api.YouTubeDlTryFirst.GetAsync();
-                Assert.Null(result);
-            }
-            finally
-            {
-                await app.LogAndQuitAsync(_output);
-            }
+            await app.LogAndQuitAsync(_output);
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(GetValues))]
-        public async Task RemoveAsync_Value_ValueReturnsNull(string value)
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task SetAsync_Empty_ReturnsValue(string value)
+    {
+        using var app = await TestIntegrationSetup.CreateAsync();
+
+        try
         {
-            using var app = await TestIntegrationSetup.CreateAsync();
+            await app.Api.YouTubeDlTryFirst.SetAsync(value);
 
-            try
-            {
-                await app.Api.YouTubeDlTryFirst.SetAsync(value);
-                await app.Api.YouTubeDlTryFirst.RemoveAsync();
+            var result = await app.Api.YouTubeDlTryFirst.GetAsync();
+            Assert.Null(result);
+        }
+        finally
+        {
+            await app.LogAndQuitAsync(_output);
+        }
+    }
 
-                var result = await app.Api.YouTubeDlTryFirst.GetAsync();
-                Assert.Null(result);
-            }
-            finally
-            {
-                await app.LogAndQuitAsync(_output);
-            }
+    [Theory]
+    [MemberData(nameof(GetValues))]
+    public async Task RemoveAsync_Value_ValueReturnsNull(string value)
+    {
+        using var app = await TestIntegrationSetup.CreateAsync();
+
+        try
+        {
+            await app.Api.YouTubeDlTryFirst.SetAsync(value);
+            await app.Api.YouTubeDlTryFirst.RemoveAsync();
+
+            var result = await app.Api.YouTubeDlTryFirst.GetAsync();
+            Assert.Null(result);
+        }
+        finally
+        {
+            await app.LogAndQuitAsync(_output);
         }
     }
 }

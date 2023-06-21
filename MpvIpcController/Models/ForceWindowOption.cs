@@ -1,14 +1,11 @@
-﻿using System;
+﻿namespace HanumanInstitute.MpvIpcController;
 
-namespace HanumanInstitute.MpvIpcController
+/// <summary>
+/// Specified whether to create a video output window even if there is no video.
+/// </summary>
+public enum ForceWindowOption
 {
-    /// <summary>
-    /// Specified whether to create a video output window even if there is no video.
-    /// </summary>
-    public enum ForceWindowOption
-    {
-        Yes,
-        No,
-        Immediate
-    }
+    Yes,
+    No,
+    Immediate
 }

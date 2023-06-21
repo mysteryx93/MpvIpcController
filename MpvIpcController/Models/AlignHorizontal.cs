@@ -1,18 +1,15 @@
-﻿using System;
+﻿namespace HanumanInstitute.MpvIpcController;
 
-namespace HanumanInstitute.MpvIpcController
+/// <summary>
+/// Control to which corner of the screen text subtitles should be aligned to.
+/// </summary>
+public enum AlignHorizontal
 {
     /// <summary>
-    /// Control to which corner of the screen text subtitles should be aligned to.
+    /// Justifies as defined by --sub-align-y
     /// </summary>
-    public enum AlignHorizontal
-    {
-        /// <summary>
-        /// Justifies as defined by --sub-align-y
-        /// </summary>
-        Auto,
-        Left,
-        Right,
-        Center
-    }
+    Auto,
+    Left,
+    Right,
+    Center
 }

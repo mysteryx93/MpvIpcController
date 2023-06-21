@@ -6,84 +6,83 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HanumanInstitute.MpvIpcController.Tests
+namespace HanumanInstitute.MpvIpcController.Tests;
+
+public class TestSetup : IDisposable
 {
-    public class TestSetup : IDisposable
+    private TestSetup()
+    { }
+
+    public static TestSetup Create() => new TestSetup().InitConnection();
+
+    private const string PipeName = "testpipe";
+    [NotNull]
+    public NamedPipeServerStream? Server { get; private set; }
+    [NotNull]
+    public NamedPipeClientStream? Client { get; private set; }
+    [NotNull]
+    public MpvApi? Api { get; private set; }
+    [NotNull]
+    public MpvController? Controller { get; private set; }
+    private readonly SemaphoreSlim _semaphoreResponse = new SemaphoreSlim(1, 1);
+    private PipeStreamListener? _listener;
+    public StringBuilder ServerLog { get; } = new StringBuilder();
+
+    private TestSetup InitConnection()
     {
-        private TestSetup()
-        { }
+        Server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances,
+            PipeTransmissionMode.Byte,
+            PipeOptions.Asynchronous);
+        Client = new NamedPipeClientStream(".", PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+        Client.Connect();
+        Server.WaitForConnection();
+        _listener = new PipeStreamListener(Server, MessageReceived);
+        _listener.Start();
+        Controller = new MpvController(Client);
+        Api = new MpvApi(Controller);
+        return this;
+    }
 
-        public static TestSetup Create() => new TestSetup().InitConnection();
+    private void MessageReceived(string message)
+    {
+        ServerLog.Append(message);
+    }
 
-        private const string PipeName = "testpipe";
-        [NotNull]
-        public NamedPipeServerStream? Server { get; private set; }
-        [NotNull]
-        public NamedPipeClientStream? Client { get; private set; }
-        [NotNull]
-        public MpvApi? Api { get; private set; }
-        [NotNull]
-        public MpvController? Controller { get; private set; }
-        private readonly SemaphoreSlim _semaphoreResponse = new SemaphoreSlim(1, 1);
-        private PipeStreamListener? _listener;
-        public StringBuilder ServerLog { get; } = new StringBuilder();
-
-        private TestSetup InitConnection()
+    public async Task WriteServerMessageAsync(string message)
+    {
+        var data = Encoding.UTF8.GetBytes(message).Append(Convert.ToByte('\n')).ToArray();
+        await _semaphoreResponse.WaitAsync().ConfigureAwait(false);
+        try
         {
-            Server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances,
-                                                    PipeTransmissionMode.Byte,
-                                                    PipeOptions.Asynchronous);
-            Client = new NamedPipeClientStream(".", PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-            Client.Connect();
-            Server.WaitForConnection();
-            _listener = new PipeStreamListener(Server, MessageReceived);
-            _listener.Start();
-            Controller = new MpvController(Client);
-            Api = new MpvApi(Controller);
-            return this;
+            await Server.WriteAsync(data).ConfigureAwait(false);
         }
-
-        private void MessageReceived(string message)
+        finally
         {
-            ServerLog.Append(message);
+            _semaphoreResponse.Release();
         }
+    }
 
-        public async Task WriteServerMessageAsync(string message)
+
+    private bool _disposedValue;
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
         {
-            var data = Encoding.UTF8.GetBytes(message).Append(Convert.ToByte('\n')).ToArray();
-            await _semaphoreResponse.WaitAsync().ConfigureAwait(false);
-            try
+            if (disposing)
             {
-                await Server.WriteAsync(data).ConfigureAwait(false);
+                _listener?.Dispose();
+                Api?.Dispose();
+                Client?.Dispose();
+                Server?.Dispose();
+                _semaphoreResponse.Dispose();
             }
-            finally
-            {
-                _semaphoreResponse.Release();
-            }
+            _disposedValue = true;
         }
+    }
 
-
-        private bool _disposedValue;
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _listener?.Dispose();
-                    Api?.Dispose();
-                    Client?.Dispose();
-                    Server?.Dispose();
-                    _semaphoreResponse.Dispose();
-                }
-                _disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }
